@@ -1,0 +1,39 @@
+[project]
+name = "finance-agent"
+version = "0.1.0"
+description = "金融研究 Agent —— 实施阶段 M0(底座兼容实验)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "deepagents>=0.2",
+    "langchain>=0.3",
+    "langchain-openai>=0.3",
+    "langgraph-checkpoint-sqlite>=2.0",
+    "pydantic>=2.9",
+    "python-dotenv>=1.0",
+]
+
+[project.scripts]
+m0 = "finance_agent.m0.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.8",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/finance_agent"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
