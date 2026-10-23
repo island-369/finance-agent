@@ -1,0 +1,20 @@
+{
+  "case_id": "an-1",
+  "task_type": "announcement",
+  "objective": "研究 demo-company-a 一季报更正公告的内容及其对业绩结论的影响,引用公告原文",
+  "entity_ids": [
+    "demo-company-a"
+  ],
+  "as_of": "2026-08-31T23:59:59+08:00",
+  "expectation": {
+    "required_refs": [
+      "chk-a-q1-correct-v1-p1-1"
+    ],
+    "required_keywords": [
+      "更正"
+    ],
+    "skill_hint": [
+      "announcement-impact"
+    ]
+  }
+}

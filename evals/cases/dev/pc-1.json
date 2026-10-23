@@ -1,0 +1,19 @@
+{
+  "case_id": "pc-1",
+  "task_type": "peer",
+  "objective": "同口径对比 demo-company-a 与 demo-company-b 2026 年上半年累计营业收入",
+  "entity_ids": [
+    "demo-company-a",
+    "demo-company-b"
+  ],
+  "as_of": "2026-08-31T23:59:59+08:00",
+  "expectation": {
+    "required_refs": [
+      "obs-a-rev-cum-2026h1",
+      "obs-b-rev-cum-2026h1"
+    ],
+    "skill_hint": [
+      "peer-comparison"
+    ]
+  }
+}

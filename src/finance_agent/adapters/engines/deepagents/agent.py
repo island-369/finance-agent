@@ -46,14 +46,18 @@ def build_research_agent(
     engine_tools: list[BaseTool],
     checkpointer: Checkpointer | None = None,
     interrupt_on: dict[str, bool] | None = None,
+    extra_system_prompt: str | None = None,
 ) -> Any:
     permissions = [
         FilesystemPermission(operations=["write"], paths=["/"], mode="deny"),
     ]
+    system_prompt = M2_SYSTEM_PROMPT
+    if extra_system_prompt:
+        system_prompt = f"{M2_SYSTEM_PROMPT}\n\n{extra_system_prompt}"
     return create_deep_agent(
         model=model,
         tools=engine_tools,
-        system_prompt=M2_SYSTEM_PROMPT,
+        system_prompt=system_prompt,
         skills=["/skills/"],
         backend=FilesystemBackend(root_dir=skills_view_root),
         permissions=permissions,

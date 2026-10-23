@@ -1,0 +1,23 @@
+{
+  "case_id": "ea-2",
+  "task_type": "earnings",
+  "objective": "比较 demo-company-a 2026 年上半年收入与利润的变化方向,指出不一致的环节",
+  "entity_ids": [
+    "demo-company-a"
+  ],
+  "as_of": "2026-08-31T23:59:59+08:00",
+  "expectation": {
+    "required_refs": [
+      "obs-a-rev-cum-2026h1",
+      "obs-a-rev-cum-2025h1"
+    ],
+    "expected_numbers": [
+      "16.22",
+      "0.1622",
+      "4300000000"
+    ],
+    "skill_hint": [
+      "earnings-analysis"
+    ]
+  }
+}

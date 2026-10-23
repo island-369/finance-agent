@@ -1,0 +1,20 @@
+{
+  "case_id": "an-2",
+  "task_type": "announcement",
+  "objective": "demo-company-a 半年度业绩预告发布后为何更正?比较更正前后口径",
+  "entity_ids": [
+    "demo-company-a"
+  ],
+  "as_of": "2026-08-31T23:59:59+08:00",
+  "expectation": {
+    "required_refs": [
+      "chk-a-h1-preview-v2-p1-1"
+    ],
+    "required_keywords": [
+      "更正"
+    ],
+    "skill_hint": [
+      "announcement-impact"
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "case_id": "ea-1",
+  "task_type": "earnings",
+  "objective": "分析 demo-company-a 2026 年上半年累计净利润的同比变化,给出证据与计算依据",
+  "entity_ids": [
+    "demo-company-a"
+  ],
+  "as_of": "2026-08-31T23:59:59+08:00",
+  "expectation": {
+    "required_refs": [
+      "obs-a-np-cum-2026h1-v2",
+      "obs-a-np-cum-2025h1"
+    ],
+    "expected_numbers": [
+      "-11.11",
+      "-0.1111",
+      "272000000"
+    ],
+    "skill_hint": [
+      "earnings-analysis"
+    ],
+    "allow_no_skill": true,
+    "notes": "修订版 v2 应被采用"
+  }
+}

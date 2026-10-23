@@ -1,0 +1,509 @@
+[
+  {
+    "case_result": {
+      "case_id": "ea-1",
+      "group": "C",
+      "status": "succeeded",
+      "result": {
+        "objective": "分析 demo-company-a 2026 年上半年累计净利润的同比变化,给出证据与计算依据",
+        "researched_at": "2026-08-31T23:59:59+08:00",
+        "entity_ids": [
+          "demo-company-a"
+        ],
+        "summary": "按截止 2026-08-31 可得的最新修订口径,演示公司A 2026 年上半年累计净利润为 2.72 亿元(obs-a-np-cum-2026h1-v2,合并报表,CNY),较 2025 年同期的 3.06 亿元(obs-a-np-cum-2025h1)下降 11.11%(calc-2b8b47a552);同期累计营业收入由 37.00 亿元增至 43.00 亿元,同比增长 16.22%(calc-164a960b47)。收入增长而净利润下降,意味着利润率同比收窄,属\"增收不增利\"。净利润口径为 2026 年半年度业绩更正后的数据(下调 2400 万元),与更正后业绩预告披露的 27,200 万元、同比下降约 11% 一致(chk-a-h1-preview-v2-p1-1)。利润下滑的具体成本/费用驱动因素在截止时间前的可得文档中未见披露,列为信息缺口。",
+        "key_findings": [
+          {
+            "statement": "2026 年上半年累计净利润 272,000,000 元(obs-a-np-cum-2026h1-v2,合并报表,CNY,2026-01-01 至 2026-06-30,revision v2),较 2025 年同期 306,000,000 元(obs-a-np-cum-2025h1)同比下降 11.11%(calc-2b8b47a552,公式 (本期-同期)/同期)。",
+            "kind": "fact",
+            "refs": [
+              "obs-a-np-cum-2026h1-v2",
+              "obs-a-np-cum-2025h1",
+              "calc-2b8b47a552"
+            ]
+          },
+          {
+            "statement": "净利润本期采用修订后版本:该观测 note 标注“2026 年半年度业绩更正公告:净利润下调 2400 万元”,available_at 为 2026-08-15,在任务截止时间前已生效,故同比基数比较使用 v2 而非原预告口径。",
+            "kind": "fact",
+            "refs": [
+              "obs-a-np-cum-2026h1-v2"
+            ]
+          },
+          {
+            "statement": "同期累计营业收入 4,300,000,000 元(obs-a-rev-cum-2026h1)较 2025 年同期 3,700,000,000 元(obs-a-rev-cum-2025h1)增长 16.22%(calc-164a960b47),收入与利润方向相反,呈现“增收不增利”。",
+            "kind": "fact",
+            "refs": [
+              "obs-a-rev-cum-2026h1",
+              "obs-a-rev-cum-2025h1",
+              "calc-164a960b47"
+            ]
+          },
+          {
+            "statement": "由收入增长 16.22%(calc-164a960b47)与净利润下降 11.11%(calc-2b8b47a552)可推断:2026H1 净利率相对 2025H1 明显收窄,利润端承压来自利润率(成本/费用侧)而非收入规模。",
+            "kind": "inference",
+            "refs": [
+              "calc-164a960b47",
+              "calc-2b8b47a552"
+            ]
+          },
+          {
+            "statement": "文档证据与数据一致:更正后的 2026 年半年度业绩预告称“预计 2026 年半年度实现净利润 27,200 万元,同比下降约 11%,此前预告数据有误,以本公告为准”(chk-a-h1-preview-v2-p1-1,2026-07-12 披露),与 obs-a-np-cum-2026h1-v2 的 2.72 亿元及 calc-2b8b47a552 的 -11.11% 相互印证。",
+            "kind": "fact",
+            "refs": [
+              "chk-a-h1-preview-v2-p1-1",
+              "obs-a-np-cum-2026h1-v2",
+              "calc-2b8b47a552"
+            ]
+          },
+          {
+            "statement": "另需注意 2026 年一季度报告曾更正:归母净利润由 112,000,000 元调整为 98,000,000 元,原因是子公司内部交易抵销遗漏(chk-a-q1-correct-v1-p1-1),说明本期利润数据存在前期差错更正背景,解读同比时应以修订后口径为准。",
+            "kind": "fact",
+            "refs": [
+              "chk-a-q1-correct-v1-p1-1"
+            ]
+          }
+        ],
+        "metric_refs": [
+          "obs-a-np-cum-2026h1-v2",
+          "obs-a-np-cum-2025h1",
+          "obs-a-rev-cum-2026h1",
+          "obs-a-rev-cum-2025h1"
+        ],
+        "calculation_refs": [
+          "calc-2b8b47a552",
+          "calc-164a960b47"
+        ],
+        "evidence_refs": [
+          {
+            "evidence_id": "chk-a-h1-preview-v2-p1-1",
+            "document_version_id": "docv-a-h1-preview-v2",
+            "page": 1,
+            "paragraph": 1,
+            "available_at": "2026-07-12T00:00:00Z",
+            "quote": "更正:公司预计 2026 年半年度实现净利润 27,200 万元,同比下降约 11%,此前预告数据有误,以本公告为准。"
+          },
+          {
+            "evidence_id": "chk-a-q1-correct-v1-p1-1",
+            "document_version_id": "docv-a-q1-correct-v1",
+            "page": 1,
+            "paragraph": 1,
+            "available_at": "2026-05-30T00:00:00Z",
+            "quote": "公司对 2026 年第一季度报告进行更正:归属于母公司股东的净利润由 112,000,000 元调整为 98,000,000 元,系子公司内部交易抵销遗漏。"
+          },
+          {
+            "evidence_id": "chk-a-annual-2025-v1-p1-1",
+            "document_version_id": "docv-a-annual-2025-v1",
+            "page": 1,
+            "paragraph": 1,
+            "available_at": "2026-01-28T00:00:00Z",
+            "quote": "公司 2025 年度实现营业收入 92.00 亿元,同比增长 35.3%;归属于母公司股东的净利润 7.80 亿元,同比增长 42.9%。"
+          }
+        ],
+        "information_gaps": [
+          "截止 2026-08-31 未检索到 2026 年半年度正式报告(半年报)原文,本期利润数据来自标准化观测与更正后业绩预告,正式报告披露的利润表细项(营业成本、期间费用、减值等)缺失。",
+          "net_margin 指标在截止时间前无可用观测(finance_get_metrics 返回 DATA_NOT_FOUND),净利率变化只能由收入与净利润观测推断,未取得工具计算的利润率数值。",
+          "利润同比下降的具体驱动因素(毛利率变化、费用率、非经常性损益、内部交易抵销影响金额)在可得文档中无披露,无法量化归因。",
+          "2026 年一季度更正(归母净利润 1.12 亿→0.98 亿)对上半年累计数的影响金额未在文档中说明,无法单独拆分。",
+          "观测口径为净利润(net_profit),文档表述为“归属于母公司股东的净利润”,两者是否完全一致未在数据源中明确标注。"
+        ],
+        "skill_versions": [
+          "earnings-analysis@0.1.0"
+        ],
+        "tool_versions": [
+          "finance.get_metrics@1",
+          "finance.calculate_growth@1",
+          "documents.search@1",
+          "documents.read@1"
+        ],
+        "quality_flags": [
+          "completed_partial"
+        ]
+      },
+      "loaded_skills": [
+        "earnings-analysis"
+      ],
+      "budget": {
+        "max_model_calls": 15,
+        "max_tool_calls": 30,
+        "model_calls": 6,
+        "tool_calls": 11
+      },
+      "usage": {
+        "input_tokens": 50894,
+        "output_tokens": 3031
+      },
+      "wall_seconds": 14.255067583057098,
+      "error": null,
+      "notes": ""
+    },
+    "score": {
+      "completed": true,
+      "partial": false,
+      "citation_valid": true,
+      "invalid_refs": [],
+      "numeric_ok": true,
+      "missing_numbers": [
+        "-0.1111",
+        "272000000"
+      ],
+      "fabricated_numbers": [],
+      "missing_keywords": [],
+      "missing_refs": [],
+      "skill_ok": true,
+      "time_violations": 0,
+      "model_calls": 6,
+      "tool_calls": 11,
+      "input_tokens": 50894,
+      "output_tokens": 3031,
+      "wall_seconds": 14.26,
+      "status": "succeeded",
+      "notes": ""
+    }
+  },
+  {
+    "case_result": {
+      "case_id": "ea-2",
+      "group": "C",
+      "status": "succeeded",
+      "result": {
+        "objective": "比较 demo-company-a 2026 年上半年收入与利润的变化方向,指出不一致的环节",
+        "researched_at": "2026-08-31T23:59:59+08:00",
+        "entity_ids": [
+          "demo-company-a"
+        ],
+        "summary": "2026 年上半年 demo-company-a 收入与利润方向相反:营业收入 43.00 亿元,同比 +16.22%(obs-a-rev-cum-2026h1 / obs-a-rev-cum-2025h1,calc-7ec484f486);净利润 2.72 亿元,同比 -11.11%(obs-a-np-cum-2026h1-v2 / obs-a-np-cum-2025h1,calc-9e0190c64f)。不一致环节集中在\"收入→利润\"的转化:收入增长而利润下滑,隐含利润率由约 8.27% 降至约 6.33%(由上述观测值推算,非工具观测)。利润口径已按截止时间内最新修订(v2,业绩更正公告下调 2400 万元)采用;成本/费用侧拆解数据在截止时间内不可得,原因无法进一步定位。",
+        "key_findings": [
+          {
+            "statement": "2026 年上半年营业收入 4,300,000,000 元(obs-a-rev-cum-2026h1),较 2025 年同期 3,700,000,000 元(obs-a-rev-cum-2025h1)增长 16.22%(calc-7ec484f486),收入方向为上升。",
+            "kind": "fact",
+            "refs": [
+              "obs-a-rev-cum-2026h1",
+              "obs-a-rev-cum-2025h1",
+              "calc-7ec484f486"
+            ]
+          },
+          {
+            "statement": "2026 年上半年净利润 272,000,000 元(obs-a-np-cum-2026h1-v2,修订版 v2),较 2025 年同期 306,000,000 元(obs-a-np-cum-2025h1)下降 11.11%(calc-9e0190c64f),利润方向为下降。",
+            "kind": "fact",
+            "refs": [
+              "obs-a-np-cum-2026h1-v2",
+              "obs-a-np-cum-2025h1",
+              "calc-9e0190c64f"
+            ]
+          },
+          {
+            "statement": "不一致环节:收入与利润方向相反(收入 +16.22% vs 净利润 -11.11%),即收入增长未转化为利润增长;按观测值推算的净利率由 2025H1 约 8.27%(306/3700)降至 2026H1 约 6.33%(272/4300),利润率压缩约 1.94 个百分点(该比率为基于 obs-a-np-cum-2025h1、obs-a-rev-cum-2025h1、obs-a-np-cum-2026h1-v2、obs-a-rev-cum-2026h1 的推算,工具未提供 net_margin 观测)。",
+            "kind": "inference",
+            "refs": [
+              "obs-a-rev-cum-2026h1",
+              "obs-a-np-cum-2026h1-v2",
+              "obs-a-rev-cum-2025h1",
+              "obs-a-np-cum-2025h1",
+              "calc-7ec484f486",
+              "calc-9e0190c64f"
+            ]
+          },
+          {
+            "statement": "利润口径需注意修订:半年度净利润采用截止时间内最新版本 v2(obs-a-np-cum-2026h1-v2),对应 2026 年半年度业绩预告(更正后)披露的净利润 27,200 万元、同比下降约 11%(chk-a-h1-preview-v2-p1-1),与工具观测一致;若沿用更正前数据会高估利润。",
+            "kind": "fact",
+            "refs": [
+              "obs-a-np-cum-2026h1-v2",
+              "chk-a-h1-preview-v2-p1-1"
+            ]
+          },
+          {
+            "statement": "季度层面存在口径不一致风险:2026Q2 单季净利润 174,000,000 元(obs-a-np-sq-2026q2)与 2026Q1 更正后净利润 98,000,000 元(chk-a-q1-correct-v1-p1-1)合计 272,000,000 元,与累计口径一致;但 2026Q2 单季观测 available_at 为 2026-07-28,早于 2026-08-15 的累计口径修订(v2),单季数据可能未反映更正影响,不宜直接用于季度环比拆解。",
+            "kind": "inference",
+            "refs": [
+              "obs-a-np-sq-2026q2",
+              "chk-a-q1-correct-v1-p1-1",
+              "obs-a-np-cum-2026h1-v2"
+            ]
+          }
+        ],
+        "metric_refs": [
+          "obs-a-rev-cum-2026h1",
+          "obs-a-rev-cum-2025h1",
+          "obs-a-np-cum-2026h1-v2",
+          "obs-a-np-cum-2025h1",
+          "obs-a-np-sq-2026q2",
+          "obs-a-rev-sq-2026q2"
+        ],
+        "calculation_refs": [
+          "calc-7ec484f486",
+          "calc-9e0190c64f"
+        ],
+        "evidence_refs": [
+          {
+            "evidence_id": "chk-a-h1-preview-v2-p1-1",
+            "document_version_id": "docv-a-h1-preview-v2",
+            "page": 1,
+            "paragraph": 1,
+            "available_at": "2026-07-12T00:00:00Z",
+            "quote": "更正:公司预计 2026 年半年度实现净利润 27,200 万元,同比下降约 11%,此前预告数据有误,以本公告为准。"
+          },
+          {
+            "evidence_id": "chk-a-q1-correct-v1-p1-1",
+            "document_version_id": "docv-a-q1-correct-v1",
+            "page": 1,
+            "paragraph": 1,
+            "available_at": "2026-05-30T00:00:00Z",
+            "quote": "公司对 2026 年第一季度报告进行更正:归属于母公司股东的净利润由 112,000,000 元调整为 98,000,000 元,系子公司内部交易抵销遗漏。"
+          },
+          {
+            "evidence_id": "chk-a-annual-2025-v1-p3-2",
+            "document_version_id": "docv-a-annual-2025-v1",
+            "page": 3,
+            "paragraph": 2,
+            "available_at": "2026-01-28T00:00:00Z",
+            "quote": "报告期内毛利率保持稳定,费用率同比下降。经营现金流净额为正,资产负债结构稳健。"
+          }
+        ],
+        "information_gaps": [
+          "截止 2026-08-31 无 gross_profit 观测(DATA_NOT_FOUND),无法验证毛利率变化,因此无法区分利润下滑来自毛利端还是费用端。",
+          "operating_cost 未登记为可用指标(registered_metrics 仅 revenue/net_profit/gross_profit/net_margin),无成本科目拆解数据。",
+          "net_margin 指标在 2026H1 与 2025H1 均无观测(DATA_NOT_FOUND),利润率变化为基于收入与净利润观测的推算值,非工具计算。",
+          "2025 年同期单季(Q2)收入与净利润观测缺失,无法做单季同比/环比拆解。",
+          "2026 年半年度正式报告(而非业绩预告)在截止时间内未检索到,利润下滑的具体原因(成本、费用、减值、非经常性损益等)缺少原文证据。",
+          "2026Q2 单季观测 available_at(2026-07-28)早于累计口径修订(2026-08-15),单季数据是否已反映更正无法确认。"
+        ],
+        "skill_versions": [
+          "earnings-analysis@0.1.0"
+        ],
+        "tool_versions": [
+          "finance.get_metrics@1",
+          "finance.calculate_growth@1",
+          "documents.search@1"
+        ],
+        "quality_flags": [
+          "completed_partial"
+        ]
+      },
+      "loaded_skills": [
+        "earnings-analysis"
+      ],
+      "budget": {
+        "max_model_calls": 15,
+        "max_tool_calls": 30,
+        "model_calls": 9,
+        "tool_calls": 20
+      },
+      "usage": {
+        "input_tokens": 83213,
+        "output_tokens": 3855
+      },
+      "wall_seconds": 18.309516125009395,
+      "error": null,
+      "notes": ""
+    },
+    "score": {
+      "completed": true,
+      "partial": false,
+      "citation_valid": true,
+      "invalid_refs": [],
+      "numeric_ok": true,
+      "missing_numbers": [
+        "0.1622",
+        "4300000000"
+      ],
+      "fabricated_numbers": [],
+      "missing_keywords": [],
+      "missing_refs": [],
+      "skill_ok": true,
+      "time_violations": 0,
+      "model_calls": 9,
+      "tool_calls": 20,
+      "input_tokens": 83213,
+      "output_tokens": 3855,
+      "wall_seconds": 18.31,
+      "status": "succeeded",
+      "notes": ""
+    }
+  },
+  {
+    "case_result": {
+      "case_id": "ea-3",
+      "group": "C",
+      "status": "succeeded",
+      "result": {
+        "objective": "分析 demo-company-a 2026 年第一季度单季净利润的变化及更正公告的影响",
+        "researched_at": "2026-08-31T23:59:59+08:00",
+        "entity_ids": [
+          "demo-company-a"
+        ],
+        "summary": "demo-company-a 2026Q1 单季净利润经 2026-05-30 更正公告由 1.12 亿元下调至 0.98 亿元(obs-a-np-sq-2026q1-v2),下调 1400 万元、幅度约 12.5%,原因为子公司内部交易抵销遗漏(chk-a-q1-correct-v1-p1-1);公告称除该科目外一季报其他财务数据不变(chk-a-q1-correct-v1-p1-2),故 Q1 单季收入 14.00 亿元(obs-a-rev-sq-2026q1)不受影响,但净利率由约 8.0% 降至约 7.0%(按工具观测值计算)。由于标准化观测库中缺少 2025Q1 单季数据,无法计算同比增速;Q2 单季净利润 1.74 亿元(obs-a-np-sq-2026q2)与 Q1 不可直接比较(期间长度不同,calc-d5527030d9 返回 INCOMPARABLE_INPUTS)。更正影响延续至半年度:2026H1 累计净利润观测为 2.72 亿元(obs-a-np-cum-2026h1-v2,含\"下调 2400 万元\"备注),与 7 月 12 日更正后业绩预告口径一致(chk-a-h1-preview-v2-p1-1)。",
+        "key_findings": [
+          {
+            "statement": "2026Q1 单季净利润的标准化观测为 0.98 亿元(98,000,000 元,合并报表,单季,CNY),revision_id=v2,备注为\"一季报更正公告:净利润由 1.12 亿调整为 0.98 亿\",available_at=2026-05-30。",
+            "kind": "fact",
+            "refs": [
+              "obs-a-np-sq-2026q1-v2"
+            ]
+          },
+          {
+            "statement": "更正公告原文(第 1 页第 1 段):\"归属于母公司股东的净利润由 112,000,000 元调整为 98,000,000 元,系子公司内部交易抵销遗漏\",即下调 14,000,000 元,降幅约 12.5%(112,000,000 → 98,000,000)。",
+            "kind": "fact",
+            "refs": [
+              "chk-a-q1-correct-v1-p1-1",
+              "obs-a-np-sq-2026q1-v2"
+            ]
+          },
+          {
+            "statement": "更正公告第 1 页第 2 段明确\"除上述更正外,第一季度报告其他财务数据不变\",因此 2026Q1 单季营业收入 1,400,000,000 元(obs-a-rev-sq-2026q1)不受本次更正影响。",
+            "kind": "fact",
+            "refs": [
+              "chk-a-q1-correct-v1-p1-2",
+              "obs-a-rev-sq-2026q1"
+            ]
+          },
+          {
+            "statement": "以工具观测值计算,Q1 单季净利率由更正前的约 8.0%(112,000,000/1,400,000,000)降至更正后的约 7.0%(98,000,000/1,400,000,000),即更正使 Q1 净利率下降约 1.0 个百分点;收入端无变化,故利润变化完全来自内部交易抵销这一合并层面调整,而非经营层面。",
+            "kind": "inference",
+            "refs": [
+              "obs-a-np-sq-2026q1-v2",
+              "obs-a-rev-sq-2026q1",
+              "chk-a-q1-correct-v1-p1-1"
+            ]
+          },
+          {
+            "statement": "2026Q2 单季净利润 174,000,000 元、单季收入 2,900,000,000 元;与 Q1 的环比增长率不可计算,工具返回 INCOMPARABLE_INPUTS(期间长度不同:2026-04-01~2026-06-30 vs 2026-01-01~2026-03-31)。",
+            "kind": "fact",
+            "refs": [
+              "obs-a-np-sq-2026q2",
+              "obs-a-rev-sq-2026q2",
+              "calc-d5527030d9",
+              "calc-b860d66cb7"
+            ]
+          },
+          {
+            "statement": "更正影响延续至半年度:2026H1 累计净利润观测为 272,000,000 元(revision_id=v2,备注\"2026 年半年度业绩更正公告:净利润下调 2400 万元\"),与 2026-07-12 更正后业绩预告\"预计半年度净利润 27,200 万元、同比下降约 11%\"口径一致。",
+            "kind": "fact",
+            "refs": [
+              "obs-a-np-cum-2026h1-v2",
+              "chk-a-h1-preview-v2-p1-1"
+            ]
+          },
+          {
+            "statement": "影响路径:子公司内部交易抵销遗漏(会计处理差错)→ 合并层面归母净利润高估 1400 万元 → Q1 单季净利润由 1.12 亿降至 0.98 亿、净利率下降约 1 个百分点 → 半年度累计净利润相应下调 2400 万元;收入与经营现金流等未在公告中提及调整。",
+            "kind": "inference",
+            "refs": [
+              "chk-a-q1-correct-v1-p1-1",
+              "chk-a-q1-correct-v1-p1-2",
+              "obs-a-np-sq-2026q1-v2",
+              "obs-a-np-cum-2026h1-v2"
+            ]
+          },
+          {
+            "statement": "2025 年度基数较高(营业收入 92.00 亿元、同比 +35.3%;归母净利润 7.80 亿元、同比 +42.9%),而 2026 半年度预告为同比下降约 11%,提示 2026 年利润增速相对 2025 年明显回落;但该对比跨越不同报告期与口径(年度 vs 半年度),仅作方向性参考。",
+            "kind": "inference",
+            "refs": [
+              "chk-a-annual-2025-v1-p1-1",
+              "chk-a-h1-preview-v2-p1-1"
+            ]
+          }
+        ],
+        "metric_refs": [
+          "obs-a-np-sq-2026q1-v2",
+          "obs-a-np-sq-2026q2",
+          "obs-a-rev-sq-2026q1",
+          "obs-a-rev-sq-2026q2",
+          "obs-a-np-cum-2026h1-v2"
+        ],
+        "calculation_refs": [
+          "calc-d5527030d9",
+          "calc-b860d66cb7"
+        ],
+        "evidence_refs": [
+          {
+            "evidence_id": "chk-a-q1-correct-v1-p1-1",
+            "document_version_id": "docv-a-q1-correct-v1",
+            "page": 1,
+            "paragraph": 1,
+            "available_at": "2026-05-30T00:00:00Z",
+            "quote": "公司对 2026 年第一季度报告进行更正:归属于母公司股东的净利润由 112,000,000 元调整为 98,000,000 元,系子公司内部交易抵销遗漏。"
+          },
+          {
+            "evidence_id": "chk-a-q1-correct-v1-p1-2",
+            "document_version_id": "docv-a-q1-correct-v1",
+            "page": 1,
+            "paragraph": 2,
+            "available_at": "2026-05-30T00:00:00Z",
+            "quote": "除上述更正外,第一季度报告其他财务数据不变。公司就本次更正向投资者致歉。"
+          },
+          {
+            "evidence_id": "chk-a-h1-preview-v2-p1-1",
+            "document_version_id": "docv-a-h1-preview-v2",
+            "page": 1,
+            "paragraph": 1,
+            "available_at": "2026-07-12T00:00:00Z",
+            "quote": "更正:公司预计 2026 年半年度实现净利润 27,200 万元,同比下降约 11%,此前预告数据有误,以本公告为准。"
+          },
+          {
+            "evidence_id": "chk-a-annual-2025-v1-p1-1",
+            "document_version_id": "docv-a-annual-2025-v1",
+            "page": 1,
+            "paragraph": 1,
+            "available_at": "2026-01-28T00:00:00Z",
+            "quote": "公司 2025 年度实现营业收入 92.00 亿元,同比增长 35.3%;归属于母公司股东的净利润 7.80 亿元,同比增长 42.9%。"
+          }
+        ],
+        "information_gaps": [
+          "标准化观测库中缺少 2025Q1 单季 net_profit 与 revenue(finance_get_metrics 返回 DATA_NOT_FOUND),因此无法用 finance_calculate_growth 计算 2026Q1 净利润/收入的同比增速;公告亦未披露 2025Q1 单季数据。",
+          "缺少 2026Q1 更正前版本的独立观测(revision v1 未在工具中返回),更正前 1.12 亿元仅来自更正公告原文与 v2 观测备注,无法用两条标准化观测交叉验证。",
+          "缺少成本、费用、毛利率、非经常性损益等科目观测,无法拆解 Q1 净利润变化中经营性与非经常性因素的构成;更正原因(内部交易抵销遗漏)对收入、存货、所得税的具体影响金额未在公告中量化。",
+          "缺少 2026Q2 单季与 2025Q2 单季同口径数据用于环比/同比,calc-d5527030d9 与 calc-b860d66cb7 因期间长度不同返回 INCOMPARABLE_INPUTS。",
+          "半年度业绩预告更正前的原始预告数值未检索到原文,仅知\"此前预告数据有误\",无法量化预告更正幅度。"
+        ],
+        "skill_versions": [
+          "announcement-impact@1.0.0",
+          "earnings-analysis@0.1.0"
+        ],
+        "tool_versions": [
+          "finance.get_metrics@1",
+          "finance.calculate_growth@1",
+          "documents.search@1",
+          "documents.read@1"
+        ],
+        "quality_flags": [
+          "completed_partial"
+        ]
+      },
+      "loaded_skills": [
+        "announcement-impact",
+        "earnings-analysis"
+      ],
+      "budget": {
+        "max_model_calls": 15,
+        "max_tool_calls": 30,
+        "model_calls": 7,
+        "tool_calls": 16
+      },
+      "usage": {
+        "input_tokens": 71068,
+        "output_tokens": 3678
+      },
+      "wall_seconds": 17.957109000068158,
+      "error": null,
+      "notes": ""
+    },
+    "score": {
+      "completed": true,
+      "partial": false,
+      "citation_valid": true,
+      "invalid_refs": [],
+      "numeric_ok": true,
+      "missing_numbers": [],
+      "fabricated_numbers": [],
+      "missing_keywords": [],
+      "missing_refs": [],
+      "skill_ok": true,
+      "time_violations": 0,
+      "model_calls": 7,
+      "tool_calls": 16,
+      "input_tokens": 71068,
+      "output_tokens": 3678,
+      "wall_seconds": 17.96,
+      "status": "succeeded",
+      "notes": ""
+    }
+  }
+]

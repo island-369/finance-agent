@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "aiosqlite>=0.22.1",
+    "akshare>=1.19.3",
     "alembic>=1.20.1",
     "deepagents>=0.2",
     "fastapi>=0.161.1",
@@ -25,6 +26,7 @@ m1 = "finance_agent.interfaces.cli.m1:main"
 m2 = "finance_agent.interfaces.cli.m2:main"
 fa-worker = "finance_agent.worker.main:main"
 fa-db = "finance_agent.interfaces.cli.db:main"
+m4 = "finance_agent.interfaces.cli.m4:main"
 
 [dependency-groups]
 dev = [

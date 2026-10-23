@@ -1,0 +1,21 @@
+{
+  "case_id": "ea-3",
+  "task_type": "earnings",
+  "objective": "分析 demo-company-a 2026 年第一季度单季净利润的变化及更正公告的影响",
+  "entity_ids": [
+    "demo-company-a"
+  ],
+  "as_of": "2026-08-31T23:59:59+08:00",
+  "expectation": {
+    "required_refs": [
+      "obs-a-np-sq-2026q1-v2"
+    ],
+    "required_keywords": [
+      "更正"
+    ],
+    "skill_hint": [
+      "earnings-analysis",
+      "announcement-impact"
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "case_id": "pc-2",
+  "task_type": "peer",
+  "objective": "同口径对比 demo-company-a 与 demo-company-b 2026 年上半年累计净利润,并说明数据可得性",
+  "entity_ids": [
+    "demo-company-a",
+    "demo-company-b"
+  ],
+  "as_of": "2026-08-31T23:59:59+08:00",
+  "expectation": {
+    "required_refs": [
+      "obs-a-np-cum-2026h1-v2"
+    ],
+    "forbidden_numbers": [
+      "179000000",
+      "1.79亿"
+    ],
+    "skill_hint": [
+      "peer-comparison"
+    ],
+    "notes": "B 净利润 09-01 披露,不得编造;缺失说明属语义项,人工抽查"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "C-old": {
+    "cases": 3,
+    "scored": 3,
+    "not_applicable": 0,
+    "completed": 3,
+    "completion_rate": 1.0,
+    "citation_valid_rate": 1.0,
+    "numeric_ok_rate": 1.0,
+    "skill_ok_rate": null,
+    "time_violations": 0,
+    "model_calls_total": 22,
+    "tool_calls_total": 47,
+    "input_tokens_total": 205175,
+    "output_tokens_total": 10564,
+    "wall_p50": 17.96,
+    "wall_p95": 18.31,
+    "failures": []
+  }
+}

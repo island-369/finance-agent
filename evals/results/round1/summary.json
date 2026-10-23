@@ -1,0 +1,151 @@
+{
+  "A": {
+    "cases": 9,
+    "scored": 9,
+    "not_applicable": 0,
+    "completed": 9,
+    "completion_rate": 1.0,
+    "citation_valid_rate": 1.0,
+    "numeric_ok_rate": 1.0,
+    "skill_ok_rate": null,
+    "time_violations": 0,
+    "model_calls_total": 75,
+    "tool_calls_total": 139,
+    "input_tokens_total": 725739,
+    "output_tokens_total": 32662,
+    "wall_p50": 16.39,
+    "wall_p95": 25.8,
+    "failures": []
+  },
+  "B": {
+    "cases": 9,
+    "scored": 9,
+    "not_applicable": 0,
+    "completed": 8,
+    "completion_rate": 0.8889,
+    "citation_valid_rate": 0.8889,
+    "numeric_ok_rate": 1.0,
+    "skill_ok_rate": null,
+    "time_violations": 0,
+    "model_calls_total": 49,
+    "tool_calls_total": 90,
+    "input_tokens_total": 487332,
+    "output_tokens_total": 25658,
+    "wall_p50": 12.38,
+    "wall_p95": 21.05,
+    "failures": [
+      {
+        "case_id": "cb-1",
+        "status": "succeeded",
+        "missing_refs": [],
+        "missing_keywords": [],
+        "missing_numbers": [],
+        "fabricated_numbers": [],
+        "invalid_refs": [
+          "chk-c-h1-2026-v1-p1-1"
+        ],
+        "skill_ok": true,
+        "notes": ""
+      }
+    ]
+  },
+  "C": {
+    "cases": 9,
+    "scored": 9,
+    "not_applicable": 0,
+    "completed": 7,
+    "completion_rate": 0.7778,
+    "citation_valid_rate": 0.8889,
+    "numeric_ok_rate": 0.8889,
+    "skill_ok_rate": 1.0,
+    "time_violations": 0,
+    "model_calls_total": 73,
+    "tool_calls_total": 133,
+    "input_tokens_total": 656453,
+    "output_tokens_total": 28891,
+    "wall_p50": 14.91,
+    "wall_p95": 23.18,
+    "failures": [
+      {
+        "case_id": "an-1",
+        "status": "succeeded",
+        "missing_refs": [],
+        "missing_keywords": [],
+        "missing_numbers": [],
+        "fabricated_numbers": [],
+        "invalid_refs": [
+          "docv-a-q1-correct-v1"
+        ],
+        "skill_ok": true,
+        "notes": ""
+      },
+      {
+        "case_id": "ea-1",
+        "status": "succeeded",
+        "missing_refs": [],
+        "missing_keywords": [],
+        "missing_numbers": [
+          "-11.11",
+          "-0.1111",
+          "272000000"
+        ],
+        "fabricated_numbers": [],
+        "invalid_refs": [],
+        "skill_ok": true,
+        "notes": ""
+      }
+    ]
+  },
+  "D": {
+    "cases": 9,
+    "scored": 3,
+    "not_applicable": 6,
+    "completed": 1,
+    "completion_rate": 0.3333,
+    "citation_valid_rate": 1.0,
+    "numeric_ok_rate": 0.6667,
+    "skill_ok_rate": null,
+    "time_violations": 0,
+    "model_calls_total": 0,
+    "tool_calls_total": 6,
+    "input_tokens_total": 0,
+    "output_tokens_total": 0,
+    "wall_p50": 0.0,
+    "wall_p95": 0.0,
+    "failures": [
+      {
+        "case_id": "ea-2",
+        "status": "succeeded",
+        "missing_refs": [
+          "obs-a-rev-cum-2026h1",
+          "obs-a-rev-cum-2025h1"
+        ],
+        "missing_keywords": [],
+        "missing_numbers": [
+          "16.22",
+          "0.1622",
+          "4300000000"
+        ],
+        "fabricated_numbers": [],
+        "invalid_refs": [],
+        "skill_ok": true,
+        "notes": "固定流程:无模型调用;不含公告检索与同业对齐"
+      },
+      {
+        "case_id": "ea-3",
+        "status": "succeeded",
+        "missing_refs": [
+          "obs-a-np-sq-2026q1-v2"
+        ],
+        "missing_keywords": [
+          "更正"
+        ],
+        "missing_numbers": [],
+        "fabricated_numbers": [],
+        "invalid_refs": [],
+        "skill_ok": true,
+        "notes": "固定流程:无模型调用;不含公告检索与同业对齐"
+      }
+    ]
+  }
+}

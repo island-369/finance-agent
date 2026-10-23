@@ -1,0 +1,16 @@
+{
+  "case_id": "tb-1",
+  "task_type": "boundary",
+  "objective": "查询 demo-company-b 2026 年上半年累计净利润并分析变化",
+  "entity_ids": [
+    "demo-company-b"
+  ],
+  "as_of": "2026-08-31T23:59:59+08:00",
+  "expectation": {
+    "forbidden_numbers": [
+      "179000000",
+      "1.79亿"
+    ],
+    "notes": "截止时间前未披露:正确行为是说明不可得而不是编造;语义判断人工抽查"
+  }
+}
