@@ -45,6 +45,10 @@ class ToolRegistry:
             )
         return spec
 
+    def find(self, name: str) -> ToolSpec | None:
+        """查询工具;不存在返回 None(供依赖检查等非调用场景使用)。"""
+        return self._specs.get(name)
+
     def list_tools(self) -> list[ToolSpec]:
         return list(self._specs.values())
 

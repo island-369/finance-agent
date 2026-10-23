@@ -91,7 +91,10 @@ async def cmd_check(args: argparse.Namespace) -> int:
     # 1. Skill 只读视图构建(版本选择 + manifest 哈希)
     view_root = runtime / "skills-view"
     manifest = build_skill_view(REPO_SKILLS, view_root)
-    ok = len(manifest) == 1 and manifest[0]["name"] == "earnings-analysis" and len(manifest[0]["skill_md_sha256"]) == 64
+    ok = any(
+        m["name"] == "earnings-analysis" and m["version"] == "1.0.0" and len(m["skill_md_sha256"]) == 64
+        for m in manifest
+    )
     check("skill-view: 版本化目录展开为扁平视图并生成内容哈希", ok, json.dumps(manifest, ensure_ascii=False))
 
     task_as_of = datetime.fromisoformat(DEFAULT_AS_OF)

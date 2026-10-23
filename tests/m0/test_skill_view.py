@@ -76,12 +76,11 @@ def skills_view(tmp_path: Path) -> Path:
 
 class TestSkillView:
     def test_builds_flat_view_with_manifest(self, tmp_path: Path):
+        # M2 起 skills/ 含多个包;M0 视图逻辑应取每包最新版本
         manifest = build_skill_view(PROJECT_ROOT / "skills", tmp_path / "view")
-        assert len(manifest) == 1
-        entry = manifest[0]
-        assert entry["name"] == "earnings-analysis"
-        assert entry["version"] == "0.1.0"
-        assert len(entry["skill_md_sha256"]) == 64
+        by_name = {m["name"]: m for m in manifest}
+        assert by_name["earnings-analysis"]["version"] == "1.0.0"
+        assert len(by_name["earnings-analysis"]["skill_md_sha256"]) == 64
         assert (tmp_path / "view" / "skills" / "earnings-analysis" / "SKILL.md").is_file()
         assert (tmp_path / "view" / "manifest.json").is_file()
 
