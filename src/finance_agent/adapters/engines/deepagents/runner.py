@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -58,6 +59,10 @@ def _skill_from_read(file_path: str | None) -> str | None:
     return parts[1] if len(parts) >= 2 else None
 
 
+class CancelAbort(Exception):
+    """外部取消请求;执行侧停止消费事件流。"""
+
+
 async def stream_run(
     agent: Any,
     run_input: Any,
@@ -65,7 +70,15 @@ async def stream_run(
     budget: Budget,
     *,
     max_loaded_skills: int = 3,
+    emit_event: Callable[[dict], Any] | None = None,
+    should_cancel: Callable[[], Any] | None = None,
 ) -> RunOutcome:
+    """消费事件流。
+
+    emit_event:每个公开事件的回调,可为 async(逐条写 run_events / 实时 SSE)。
+    should_cancel:在模型/工具调用前检查,可为 async;真值时以 cancelled 终止
+    (设计 §6.3:Worker 在模型/工具调用前后检查取消请求)。
+    """
     events: list[dict] = []
     tool_calls: list[dict] = []
     loaded: list[str] = []
@@ -81,6 +94,13 @@ async def stream_run(
             mapped = _EVENT_MAP.get(etype)
             if mapped is None:
                 continue
+
+            if etype in ("on_chat_model_start", "on_tool_start") and should_cancel is not None:
+                flag = should_cancel()
+                if hasattr(flag, "__await__"):
+                    flag = await flag
+                if flag:
+                    raise CancelAbort
 
             if etype == "on_chat_model_start":
                 budget.record_model()
@@ -119,10 +139,18 @@ async def stream_run(
                 usage_out += payload["usage"].get("output_tokens") or 0
 
             seq += 1
-            events.append({"seq": seq, "type": mapped, **payload})
+            public = {"seq": seq, "type": mapped, **payload}
+            events.append(public)
+            if emit_event is not None:
+                res = emit_event(public)
+                if hasattr(res, "__await__"):
+                    await res
     except BudgetAbort as exc:
         status = "budget_exceeded"
         error = str(exc)
+    except CancelAbort:
+        status = "cancelled"
+        error = "收到取消请求,执行已停止"
     except Exception as exc:  # noqa: BLE001
         status = "failed"
         error = f"{type(exc).__name__}: {exc}"

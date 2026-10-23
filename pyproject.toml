@@ -5,21 +5,30 @@ description = "金融研究 Agent —— 实施阶段 M0(底座兼容实验)"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "aiosqlite>=0.22.1",
+    "alembic>=1.20.1",
     "deepagents>=0.2",
+    "fastapi>=0.161.1",
     "langchain>=0.3",
     "langchain-openai>=0.3",
     "langgraph-checkpoint-sqlite>=2.0",
+    "psycopg[binary]>=3.3.6",
     "pydantic>=2.9",
     "python-dotenv>=1.0",
+    "sqlalchemy[asyncio]>=2.1.6",
+    "uvicorn>=0.54.0",
 ]
 
 [project.scripts]
 m0 = "finance_agent.m0.cli:main"
 m1 = "finance_agent.interfaces.cli.m1:main"
 m2 = "finance_agent.interfaces.cli.m2:main"
+fa-worker = "finance_agent.worker.main:main"
+fa-db = "finance_agent.interfaces.cli.db:main"
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28.1",
     "pytest>=8.3",
     "pytest-asyncio>=0.24",
     "ruff>=0.8",

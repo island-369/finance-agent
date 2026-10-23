@@ -1,0 +1,52 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: finance
+      POSTGRES_PASSWORD: finance
+      POSTGRES_DB: finance_agent
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U finance -d finance_agent"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    ports:
+      - "5432:5432"
+
+  api:
+    build: .
+    command: uvicorn finance_agent.interfaces.api.app:app --host 0.0.0.0 --port 8000
+    environment:
+      FINANCE_AGENT_DB_URL: postgresql+psycopg://finance:finance@postgres:5432/finance_agent
+      FINANCE_AGENT_RUNTIME_DIR: /app/data/runtime
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      FINANCE_AGENT_MODEL: ${FINANCE_AGENT_MODEL:-deepseek-flash}
+      FINANCE_AGENT_BASE_URL: ${FINANCE_AGENT_BASE_URL:-https://api.deepseek.com}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - runtime:/app/data/runtime
+
+  worker:
+    build: .
+    command: fa-worker
+    environment:
+      FINANCE_AGENT_DB_URL: postgresql+psycopg://finance:finance@postgres:5432/finance_agent
+      FINANCE_AGENT_RUNTIME_DIR: /app/data/runtime
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      FINANCE_AGENT_MODEL: ${FINANCE_AGENT_MODEL:-deepseek-flash}
+      FINANCE_AGENT_BASE_URL: ${FINANCE_AGENT_BASE_URL:-https://api.deepseek.com}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - runtime:/app/data/runtime
+
+volumes:
+  pgdata:
+  runtime:

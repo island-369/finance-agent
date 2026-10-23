@@ -56,3 +56,13 @@ class Budget:
             "model_calls": self.model_calls,
             "tool_calls": self.tool_calls,
         }
+
+    @classmethod
+    def from_snapshot(cls, data: dict) -> Budget:
+        """从持久化的预算快照恢复(§10.4:恢复沿用已消耗计数,不重置)。"""
+        return cls(
+            max_model_calls=data.get("max_model_calls", 15),
+            max_tool_calls=data.get("max_tool_calls", 30),
+            model_calls=data.get("model_calls", 0),
+            tool_calls=data.get("tool_calls", 0),
+        )
