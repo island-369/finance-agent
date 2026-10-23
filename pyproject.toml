@@ -15,6 +15,7 @@ dependencies = [
 
 [project.scripts]
 m0 = "finance_agent.m0.cli:main"
+m1 = "finance_agent.interfaces.cli.m1:main"
 
 [dependency-groups]
 dev = [
