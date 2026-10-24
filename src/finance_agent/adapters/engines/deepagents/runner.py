@@ -40,6 +40,33 @@ class RunOutcome:
     quality_flags: list[str] = field(default_factory=list)
 
 
+async def build_resume_payload(
+    agent: Any, config: dict, approve: bool = True, message: str | None = None
+) -> dict:
+    """从检查点读取挂起的审批调用数,构造数量匹配的恢复 payload。
+
+    batched 模式下一个中断可能挂起同一回合的多个工具调用,决定必须按位置
+    一一对应(真实模型实测);数量不符会抛 "Number of human decisions
+    ... does not match"。
+    """
+    snapshot = await agent.aget_state(config)
+    hanging = 1
+    for task in snapshot.tasks:
+        for intr in getattr(task, "interrupts", None) or []:
+            value = getattr(intr, "value", None)
+            if isinstance(value, dict) and isinstance(value.get("action_requests"), list):
+                hanging = max(hanging, len(value["action_requests"]))
+    return resume_payload(approve=approve, message=message, count=hanging)
+
+
+def resume_payload(approve: bool = True, message: str | None = None, count: int = 1) -> dict:
+    """构造 HumanInTheLoopMiddleware(batched 模式)的恢复 payload。"""
+    decision = {"type": "approve" if approve else "reject"}
+    if message:
+        decision["message"] = message
+    return {"decisions": [dict(decision) for _ in range(count)]}
+
+
 def run_config(thread_id: str, *, recursion_limit: int = 150) -> dict:
     """统一的运行配置。
 

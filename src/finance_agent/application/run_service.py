@@ -13,7 +13,6 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
-from finance_agent.contracts.toolspec import ToolSpec
 from finance_agent.skills.registry import scan_skill_dir
 from finance_agent.skills.resolver import (
     ResolvedSkill,
@@ -120,10 +119,6 @@ def prepare_run(
         view_root=view_root,
         manifest=manifest,
     )
-
-
-def bound_specs(plan: RunPlan, tool_registry: ToolRegistry) -> list[ToolSpec]:
-    return [tool_registry.get(name) for name, _ in plan.bound_tool_refs]
 
 
 def save_run_record(plan: RunPlan, outcome, model_desc: dict, record_dir: Path | None = None) -> Path:

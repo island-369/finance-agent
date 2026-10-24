@@ -40,7 +40,7 @@ def cmd_check(args: argparse.Namespace) -> int:
 
 
 def cmd_eval(args: argparse.Namespace) -> int:
-    from finance_agent.m0.model import build_chat_model
+    from finance_agent.adapters.models import build_chat_model
 
     model = build_chat_model()
     overrides = None

@@ -14,7 +14,13 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
+from finance_agent.adapters.engines.deepagents.runner import (
+    build_resume_payload,
+    resume_payload,
+)
 from finance_agent.m0.budget import Budget, BudgetAbort
+
+__all__ = ["RunOutcome", "build_resume_payload", "resume_payload", "stream_run"]
 
 EmitFn = Callable[[dict], None]
 
@@ -130,27 +136,4 @@ async def stream_run(
     )
 
 
-def resume_payload(approve: bool = True, message: str | None = None, count: int = 1) -> dict:
-    """构造 HumanInTheLoopMiddleware(batched 模式)的恢复 payload。
 
-    batched 模式下一个中断可能挂起同一回合的多个工具调用,决定必须按位置
-    一一对应;数量不符会抛 "Number of human decisions ... does not match"。
-    """
-    decision = {"type": "approve" if approve else "reject"}
-    if message:
-        decision["message"] = message
-    return {"decisions": [dict(decision) for _ in range(count)]}
-
-
-async def build_resume_payload(
-    agent: Any, config: dict, approve: bool = True, message: str | None = None
-) -> dict:
-    """从检查点读取挂起的审批调用数,构造数量匹配的恢复 payload。"""
-    snapshot = await agent.aget_state(config)
-    hanging = 1
-    for task in snapshot.tasks:
-        for intr in getattr(task, "interrupts", None) or []:
-            value = getattr(intr, "value", None)
-            if isinstance(value, dict) and isinstance(value.get("action_requests"), list):
-                hanging = max(hanging, len(value["action_requests"]))
-    return resume_payload(approve=approve, message=message, count=hanging)

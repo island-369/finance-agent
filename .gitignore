@@ -12,6 +12,8 @@ build/
 
 # 运行产物
 data/runtime/
+# 评测逐题运行目录(视图/检查点为可重现副本;证据在 detail/summary/report)
+evals/results/*/runs/
 *.sqlite
 *.sqlite3
 .pytest_cache/

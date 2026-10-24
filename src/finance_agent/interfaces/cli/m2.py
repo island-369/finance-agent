@@ -115,7 +115,7 @@ async def _execute(args: argparse.Namespace, model) -> int:
 
 
 def cmd_run(args: argparse.Namespace) -> int:
-    from finance_agent.m0.model import MissingApiKeyError, build_chat_model
+    from finance_agent.adapters.models import MissingApiKeyError, build_chat_model
 
     try:
         model = build_chat_model()

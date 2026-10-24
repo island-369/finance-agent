@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import tempfile
 from pathlib import Path
@@ -107,7 +108,7 @@ async def eval_results() -> dict:
         for d in sorted(EVALS_RESULTS.iterdir()):
             summary = d / "summary.json"
             if summary.is_file():
-                items.append({"label": d.name, "summary": __import__("json").loads(summary.read_text(encoding="utf-8"))})
+                items.append({"label": d.name, "summary": json.loads(summary.read_text(encoding="utf-8"))})
     return {"results": items}
 
 

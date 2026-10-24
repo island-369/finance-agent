@@ -27,18 +27,6 @@ def engine_tool_name(core_name: str) -> str:
     return core_name.replace(".", "_")
 
 
-def core_tool_name(engine_name: str) -> str:
-    """下划线名还原为核心名(仅用于展示/记录;实际路由不经过这里)。"""
-    mapping = {
-        "documents_search": "documents.search",
-        "documents_read": "documents.read",
-        "finance_get_metrics": "finance.get_metrics",
-        "finance_calculate_growth": "finance.calculate_growth",
-        "finance_compare_peers": "finance.compare_peers",
-    }
-    return mapping.get(engine_name, engine_name)
-
-
 def to_engine_tool(
     spec: ToolSpec,
     tool_registry: ToolRegistry,

@@ -23,7 +23,11 @@ from finance_agent.adapters.engines.deepagents.agent import (
     make_ctx_factory,
 )
 from finance_agent.adapters.engines.deepagents.checkpoints import open_sqlite_saver
-from finance_agent.adapters.engines.deepagents.runner import run_config, stream_run
+from finance_agent.adapters.engines.deepagents.runner import (
+    build_resume_payload,
+    run_config,
+    stream_run,
+)
 from finance_agent.adapters.engines.deepagents.tools import to_engine_tools
 from finance_agent.adapters.persistence.repository import RunRepository
 from finance_agent.bootstrap import build_default_registry
@@ -32,9 +36,6 @@ from finance_agent.contracts.result import ResearchResult
 
 ModelFactory = Callable[[dict], Any]
 """接收 run 行,返回本次尝试使用的模型。"""
-
-TOOL_REF_FIXUPS = {"documents_search": "documents.search"}
-
 
 def _parse_bound_refs(refs: list[str]) -> list[tuple[str, int]]:
     parsed: list[tuple[str, int]] = []
@@ -116,8 +117,6 @@ async def execute_run(
         elif run.get("resume_action"):
             from langgraph.types import Command
 
-            from finance_agent.m0.runner import build_resume_payload
-
             payload = await build_resume_payload(agent, config, approve=run["resume_action"] == "approve")
             run_input = Command(resume=payload)
         else:
@@ -176,6 +175,6 @@ async def execute_run(
 
 
 def default_model_factory(run: dict) -> Any:
-    from finance_agent.m0.model import build_chat_model
+    from finance_agent.adapters.models import build_chat_model
 
     return build_chat_model()

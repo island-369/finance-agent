@@ -32,7 +32,7 @@ from finance_agent.adapters.persistence.repository import (
 from finance_agent.bootstrap import build_default_registry
 
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
-RUNTIME_DIR = Path(__file__).resolve().parents[4] / "data" / "runtime"
+RUNTIME_DIR = PROJECT_ROOT / "data" / "runtime"
 DEFAULT_AS_OF = "2026-08-31T23:59:59+08:00"
 SSE_POLL = 0.5
 SSE_HEARTBEAT = 15.0

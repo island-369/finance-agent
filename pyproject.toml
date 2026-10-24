@@ -1,7 +1,7 @@
 [project]
 name = "finance-agent"
-version = "0.1.0"
-description = "金融研究 Agent —— 实施阶段 M0(底座兼容实验)"
+version = "0.5.0"
+description = "金融研究 Agent:成熟引擎 + 版本化 Skill + 金融工具契约(M0–M5 已实现)"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

@@ -31,7 +31,6 @@ class SearchInput(BaseModel):
 
 class SearchHit(BaseModel):
     evidence: EvidenceRef
-    score: int
     document: DocumentVersion
 
 
@@ -68,7 +67,6 @@ def build_documents_search(source: DocumentSource) -> ToolSpec:
                         available_at=version.available_at,
                         quote=chunk.text[:120],
                     ),
-                    score=0,  # fixture 评分不外发,避免模型依赖内部打分细节
                     document=version,
                 )
             )
