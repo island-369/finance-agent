@@ -94,3 +94,37 @@ class ToolRegistry:
                     detail={"exception": str(e)[:200]},
                 ),
             )
+
+
+class RecordingToolRegistry:
+    """包装注册表:录制每次调用的完整输出(结果校验与评测的依据)。
+
+    只需满足 to_engine_tools 用到的 get/find/list_tools/call 鸭子类型;
+    outputs 项形如 {"tool", "ok", "result", "error"},与评测评分器共用。
+    """
+
+    def __init__(self, inner: ToolRegistry) -> None:
+        self._inner = inner
+        self.outputs: list[dict[str, Any]] = []
+
+    def get(self, name: str) -> ToolSpec:
+        return self._inner.get(name)
+
+    def find(self, name: str) -> ToolSpec | None:
+        return self._inner.find(name)
+
+    def list_tools(self) -> list[ToolSpec]:
+        return self._inner.list_tools()
+
+    def call(self, name: str, args: dict[str, Any], ctx: TaskContext) -> ToolResult:
+        result = self._inner.call(name, args, ctx)
+        payload = result.payload
+        self.outputs.append(
+            {
+                "tool": name,
+                "ok": result.ok,
+                "result": payload.model_dump(mode="json") if result.ok and hasattr(payload, "model_dump") else None,
+                "error": None if result.ok else result.error.payload(),
+            }
+        )
+        return result

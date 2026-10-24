@@ -23,11 +23,11 @@ from finance_agent.adapters.engines.deepagents.runner import run_config, stream_
 from finance_agent.adapters.engines.deepagents.tools import to_engine_tools
 from finance_agent.bootstrap import build_default_registry
 from finance_agent.budget import Budget
-from finance_agent.contracts.task import TaskContext
 from finance_agent.evals.cases import EvalCase
 from finance_agent.skills.registry import scan_skill_dir
 from finance_agent.skills.resolver import compute_bound_tools, eligible_candidates, resolve_skills
 from finance_agent.skills.view import build_skill_view
+from finance_agent.tools.registry import RecordingToolRegistry
 
 ALL_TOOL_REFS = [
     ("documents.search", 1), ("documents.read", 1), ("finance.get_metrics", 1),
@@ -37,35 +37,6 @@ ALL_TOOL_REFS = [
 B_PROMPT_HEADER = "以下是全部可用研究方法(已完整提供,无需读取任何文件):\n\n"
 
 
-class RecordingRegistry:
-    """包装工具注册表:录制每次调用的完整输出(评分依据)。
-
-    只需满足 to_engine_tools 用到的 get()/call() 鸭子类型。
-    """
-
-    def __init__(self, inner) -> None:
-        self._inner = inner
-        self.outputs: list[dict] = []
-
-    def get(self, name: str):
-        return self._inner.get(name)
-
-    def find(self, name: str):
-        return self._inner.find(name)
-
-    def list_tools(self):
-        return self._inner.list_tools()
-
-    def call(self, name: str, args: dict, ctx: TaskContext):
-        result = self._inner.call(name, args, ctx)
-        payload = result.payload
-        self.outputs.append({
-            "tool": name,
-            "ok": result.ok,
-            "result": payload.model_dump(mode="json") if result.ok and hasattr(payload, "model_dump") else None,
-            "error": None if result.ok else result.error.payload(),
-        })
-        return result
 
 
 @dataclass
@@ -116,7 +87,7 @@ async def run_case(
         res.wall_seconds = time.monotonic() - started
         return res
 
-    registry = RecordingRegistry(build_default_registry())
+    registry = RecordingToolRegistry(build_default_registry())
     budget = Budget(max_model_calls=15, max_tool_calls=30)
     ctx_factory = make_ctx_factory(datetime.fromisoformat(case.as_of), budget.check_tool)
 

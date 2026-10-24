@@ -108,6 +108,22 @@ function buildSteps(events: Ev[]): Step[] {
         title: p.action === "approve" ? "审批通过,继续执行" : "审批拒绝",
         status: p.action === "approve" ? "success" : "error",
       });
+    } else if (e.type === "run.validating") {
+      const hard = (p.hard as string[] | undefined) ?? [];
+      const repairable = (p.repairable as string[] | undefined) ?? [];
+      const n = hard.length + repairable.length;
+      steps.push({
+        key: `v-${e.seq}`,
+        title: n === 0 ? "结果校验通过(引用/数值/时间边界)" : `结果校验:发现 ${n} 个问题`,
+        description: n === 0 ? undefined : [...hard, ...repairable].slice(0, 3).join(";"),
+        status: n === 0 ? "success" : "loading",
+      });
+    } else if (e.type === "run.repair_feedback") {
+      steps.push({
+        key: `rf-${e.seq}`,
+        title: `第 ${p.round} 轮修复:问题清单已反馈给模型(计入预算)`,
+        status: "loading",
+      });
     } else if (e.type === "run.requeued") {
       steps.push({ key: `rq-${e.seq}`, title: "执行中断,已重新排队", status: "error" });
     }
@@ -119,6 +135,7 @@ const AVATAR_AI = <Avatar icon={<RobotOutlined />} style={{ background: "#1a66d6
 const AVATAR_USER = <Avatar icon={<UserOutlined />} style={{ background: "#eceff2", flexShrink: 0 }} />;
 
 function ResultMessage({ res }: { res: ResultBody }) {
+  const pending = ((res as { quality_flags?: string[] }).quality_flags ?? []).includes("pending_review");
   return (
     <div>
       {res.summary && (
@@ -155,6 +172,11 @@ function ResultMessage({ res }: { res: ResultBody }) {
       {res.information_gaps && res.information_gaps.length > 0 && (
         <Typography.Paragraph type="warning" style={{ fontSize: 12.5, marginBottom: 0, marginTop: 8 }}>
           信息缺口:{res.information_gaps.join(";")}
+        </Typography.Paragraph>
+      )}
+      {pending && (
+        <Typography.Paragraph type="warning" style={{ fontSize: 12.5, marginBottom: 0, marginTop: 8 }}>
+          ⚠ 部分数字未能映射到已登记记录,结果标记为待复核(completed_partial)
         </Typography.Paragraph>
       )}
     </div>
@@ -392,7 +414,7 @@ export default function RunPage() {
           {run && (
             <div style={{ marginBottom: 6, display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#8a97a5" }}>
               <span className="mono">{run.run_id}</span>
-              <Tag color={run.status === "succeeded" ? "green" : run.status === "failed" ? "red" : "blue"}>
+              <Tag color={run.status === "succeeded" ? "green" : run.status === "failed" ? "red" : run.status === "completed_partial" ? "orange" : "blue"}>
                 {run.status}
               </Tag>
               <span>

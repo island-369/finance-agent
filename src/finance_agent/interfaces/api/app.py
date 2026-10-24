@@ -125,6 +125,7 @@ def create_app(*, repo: RunRepository | None = None, runtime_dir: Path | None = 
         budget_limits = {
             "max_model_calls": req.budget.get("max_model_calls", 15),
             "max_tool_calls": req.budget.get("max_tool_calls", 30),
+            "result_repair_rounds": req.budget.get("result_repair_rounds", 2),
         }
         config = {
             "view_root": str(plan.view_root),

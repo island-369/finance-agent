@@ -38,6 +38,7 @@ class Run(Base):
     fencing_token: Mapped[int] = mapped_column(Integer, default=0)
     cancel_requested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     resume_action: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    tool_trace: Mapped[list] = mapped_column(JSON, default=list)
     error: Mapped[str | None] = mapped_column(Text, nullable=True)
     result: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

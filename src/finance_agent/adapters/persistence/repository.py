@@ -52,6 +52,7 @@ def _run_dict(run: Run) -> dict[str, Any]:
         "fencing_token": run.fencing_token,
         "cancel_requested_at": run.cancel_requested_at,
         "resume_action": run.resume_action,
+        "tool_trace": run.tool_trace,
         "error": run.error,
         "result": run.result,
         "created_at": run.created_at,
@@ -363,6 +364,39 @@ class RunRepository:
             if run is not None:
                 run.status = "validating"
                 run.updated_at = _now()
+
+    async def save_tool_trace(self, run_id: str, *, fencing_token: int, outputs: list[dict]) -> bool:
+        """累积保存本次运行的工具输出(校验 trace 跨 attempt 生效,§10.3)。"""
+        async with self._sessions() as session, session.begin():
+            run = (
+                await session.execute(
+                    select(Run).where(
+                        Run.id == run_id, Run.fencing_token == fencing_token,
+                        Run.status.in_(["running", "validating"]),
+                    )
+                )
+            ).scalar_one_or_none()
+            if run is None:
+                return False
+            run.tool_trace = outputs
+            run.updated_at = _now()
+            return True
+
+    async def mark_running(self, run_id: str, *, fencing_token: int) -> bool:
+        """validating → running(修复轮继续执行前恢复状态机)。"""
+        async with self._sessions() as session, session.begin():
+            run = (
+                await session.execute(
+                    select(Run).where(
+                        Run.id == run_id, Run.fencing_token == fencing_token, Run.status == "validating"
+                    )
+                )
+            ).scalar_one_or_none()
+            if run is None:
+                return False
+            run.status = "running"
+            run.updated_at = _now()
+            return True
 
     async def mark_waiting_input(self, run_id: str, *, fencing_token: int, attempt: int, note: str | None = None) -> bool:
         async with self._sessions() as session, session.begin():

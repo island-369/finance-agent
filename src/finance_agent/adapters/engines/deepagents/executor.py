@@ -30,9 +30,15 @@ from finance_agent.adapters.engines.deepagents.runner import (
 )
 from finance_agent.adapters.engines.deepagents.tools import to_engine_tools
 from finance_agent.adapters.persistence.repository import RunRepository
+from finance_agent.application.result_validation import (
+    build_run_trace,
+    render_repair_feedback,
+    validate_result,
+)
 from finance_agent.bootstrap import build_default_registry
 from finance_agent.budget import Budget
 from finance_agent.contracts.result import ResearchResult
+from finance_agent.tools.registry import RecordingToolRegistry
 
 ModelFactory = Callable[[dict], Any]
 """接收 run 行,返回本次尝试使用的模型。"""
@@ -75,9 +81,12 @@ async def execute_run(
     view_root = Path(config_snapshot["view_root"])
     bound_refs = _parse_bound_refs(config_snapshot["bound_tools"])
 
-    tool_registry = build_default_registry()
+    recorder = RecordingToolRegistry(build_default_registry())
+    for prior in run.get("tool_trace") or []:
+        recorder.outputs.append(prior)  # 跨 attempt 累积(§10.3 缓存语义)
+
     ctx_factory = make_ctx_factory(datetime.fromisoformat(run["as_of"]), budget.check_tool)
-    engine_tools = to_engine_tools(bound_refs, tool_registry, ctx_factory)
+    engine_tools = to_engine_tools(bound_refs, recorder, ctx_factory)
 
     ckpt_path = runtime_dir / "checkpoints" / f"{run_id}.sqlite"
 
@@ -104,6 +113,12 @@ async def execute_run(
     async def should_cancel() -> bool:
         return await repo.is_cancel_requested(run_id)
 
+    repair_phase = False  # 校验耗尽/修复轮失败 = 确定性失败,不走 requeue
+    run_status_now = "running"
+
+    async def persist_trace() -> None:
+        await repo.save_tool_trace(run_id, fencing_token=fencing, outputs=recorder.outputs)
+
     async with open_sqlite_saver(ckpt_path) as saver:
         agent = build_research_agent(
             model, skills_view_root=view_root, engine_tools=engine_tools, checkpointer=saver,
@@ -124,10 +139,70 @@ async def execute_run(
 
         outcome = await stream_run(agent, run_input, config, budget,
                                    emit_event=emit_event, should_cancel=should_cancel)
+        await repo.update_budget(run_id, fencing_token=fencing, budget_used=budget.snapshot())
+        await persist_trace()
+        run_status_now = "running"
 
-    await repo.update_budget(run_id, fencing_token=fencing, budget_used=budget.snapshot())
+        # ---- 结果校验链(§11 第 1–4 步)+ 修复循环(§6.2 第 7 步)----
+        # 必须在 saver 块内:修复轮以新消息继续同一检查点会话
+        if outcome.status == "succeeded" and outcome.result is not None:
+            await repo.mark_validating(run_id, fencing_token=fencing)
+            run_status_now = "validating"
+            try:
+                ResearchResult.model_validate(outcome.result)
+            except Exception as e:  # noqa: BLE001 — 结构错误统一转失败并保留原因
+                outcome.status, outcome.error = "failed", f"结果结构校验失败: {e}"
+            else:
+                max_rounds = int(limits.get("result_repair_rounds", 2))
+                round_no = 0
+                while True:
+                    trace = build_run_trace(recorder.outputs, as_of=datetime.fromisoformat(run["as_of"]))
+                    report = validate_result(outcome.result, trace)
+                    await repo.add_event(
+                        run_id, event_type="run.validating",
+                        payload={"round": round_no, "hard": report.hard, "repairable": report.repairable},
+                        attempt=attempt,
+                    )
+                    if report.ok:
+                        break
+                    if round_no >= max_rounds:
+                        if report.hard:
+                            outcome.status = "failed"
+                            outcome.error = (
+                                f"结果校验未通过(已用尽 {max_rounds} 轮修复):{'; '.join(report.hard[:3])}"
+                            )
+                        else:
+                            # 资料不足但结构有效 → 部分结果待复核(§11 completed_partial)
+                            outcome.status = "completed_partial"
+                            outcome.result = {**outcome.result, "quality_flags": ["pending_review"]}
+                        break
+                    round_no += 1
+                    repair_phase = True
+                    await repo.add_event(
+                        run_id, event_type="run.repair_feedback",
+                        payload={"round": round_no, "issues": len(report.hard) + len(report.repairable)},
+                        attempt=attempt,
+                    )
+                    await repo.mark_running(run_id, fencing_token=fencing)
+                    run_status_now = "running"
+                    outcome = await stream_run(
+                        agent, {"messages": [("user", render_repair_feedback(report, round_no, max_rounds))]},
+                        config, budget, emit_event=emit_event, should_cancel=should_cancel,
+                    )
+                    await repo.update_budget(run_id, fencing_token=fencing, budget_used=budget.snapshot())
+                    await persist_trace()
+                    if outcome.status == "succeeded" and outcome.result is not None:
+                        try:
+                            ResearchResult.model_validate(outcome.result)
+                        except Exception as e:  # noqa: BLE001
+                            outcome.status, outcome.error = "failed", f"修复轮结果结构校验失败: {e}"
+                            break
+                        continue
+                    break  # 非成功结局交给统一终态处理
 
     if outcome.status == "waiting_approval":
+        if run_status_now == "validating":
+            await repo.mark_running(run_id, fencing_token=fencing)
         ok = await repo.mark_waiting_input(run_id, fencing_token=fencing, attempt=attempt,
                                            note="工具调用等待审批(可 POST /resume 恢复)")
         return "waiting_input" if ok else "lost_lease"
@@ -143,6 +218,11 @@ async def execute_run(
         return "failed" if ok else "lost_lease"
 
     if outcome.status == "failed":
+        if repair_phase:
+            # 校验耗尽/修复轮失败:确定性失败,重试对已完成的会话无意义
+            ok = await repo.finish_run(run_id, fencing_token=fencing, status="failed",
+                                       attempt=attempt, error=outcome.error)
+            return "failed" if ok else "lost_lease"
         if attempt < run["max_attempts"]:
             ok = await repo.requeue(run_id, fencing_token=fencing, error=outcome.error)
             return "requeued" if ok else "lost_lease"
@@ -151,27 +231,22 @@ async def execute_run(
                                    error=f"已达最大尝试次数({run['max_attempts']}): {outcome.error}")
         return "failed" if ok else "lost_lease"
 
-    # succeeded:结构校验(§11 第 1 步雏形)→ 终态 + 产物同事务提交
-    await repo.mark_validating(run_id, fencing_token=fencing)
-    try:
-        ResearchResult.model_validate(outcome.result or {})
-    except Exception as e:  # noqa: BLE001 — 校验错误统一转为任务失败并保留原因
-        ok = await repo.finish_run(run_id, fencing_token=fencing, status="failed",
-                                   attempt=attempt, error=f"结果结构校验失败: {e}")
-        return "failed" if ok else "lost_lease"
-
-    ok = await repo.finish_run(
-        run_id, fencing_token=fencing, status="succeeded", attempt=attempt,
-        result=outcome.result, artifact_kind="research-result.v1", artifact_content=outcome.result,
-    )
-    if not ok:
-        return "lost_lease"
-    await repo.add_event(
-        run_id, event_type="run.skills_loaded",
-        payload={"loaded": outcome.loaded_skills, "no_skill_selected": not outcome.loaded_skills},
-        attempt=attempt,
-    )
-    return "succeeded"
+    if outcome.status in ("succeeded", "completed_partial"):
+        # 结构有效(引用/数值问题已按轮次处理):终态 + 产物同事务提交
+        ok = await repo.finish_run(
+            run_id, fencing_token=fencing, status=outcome.status, attempt=attempt,
+            result=outcome.result, artifact_kind="research-result.v1", artifact_content=outcome.result,
+            error=outcome.error,
+        )
+        if not ok:
+            return "lost_lease"
+        await repo.add_event(
+            run_id, event_type="run.skills_loaded",
+            payload={"loaded": outcome.loaded_skills, "no_skill_selected": not outcome.loaded_skills},
+            attempt=attempt,
+        )
+        return outcome.status
+    raise AssertionError(f"未处理的执行结局: {outcome.status}")  # pragma: no cover
 
 
 def default_model_factory(run: dict) -> Any:

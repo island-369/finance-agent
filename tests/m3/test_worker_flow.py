@@ -53,12 +53,20 @@ def _full_script() -> list:
             "entity_id": "demo-company-a", "metric": "net_profit", "basis": "cumulative",
             "period_start": "2025-01-01", "period_end": "2026-06-30",
         }, "c2"),
+        tool_call_msg("finance_get_metrics", {
+            "entity_id": "demo-company-a", "metric": "revenue", "basis": "cumulative",
+            "period_start": "2025-01-01", "period_end": "2026-06-30",
+        }, "c2b"),
         tool_call_msg("finance_calculate_growth", {
             "current_observation_id": "obs-a-np-cum-2026h1-v2",
             "base_observation_id": "obs-a-np-cum-2025h1",
         }, "c3"),
         research_result_msg(OBJECTIVE, "demo-company-a"),
     ]
+
+
+def _submit(result_args: dict, call_id: str = "c9"):
+    return tool_call_msg("ResearchResult", result_args, call_id)
 
 
 def _poison(messages):
@@ -91,8 +99,8 @@ class TestHappyPath:
         assert "run.skills_loaded" in types
         assert "run.status_changed" in types
         assert types[-1] == "run.skills_loaded"  # finish 之后追加
-        assert run["budget_used"]["model_calls"] == 4
-        assert run["budget_used"]["tool_calls"] == 3
+        assert run["budget_used"]["model_calls"] == 5
+        assert run["budget_used"]["tool_calls"] == 4
 
     async def test_skill_loaded_event(self, repo, tmp_path: Path):
         await _make_run(repo, tmp_path, "run-w1b")
@@ -137,9 +145,9 @@ class TestCrashRecovery:
         assert final2 == "succeeded"
         done = await repo.get_run("run-c1")
         assert done["status"] == "succeeded"
-        # 预算沿第一次尝试的计数累计:2+3 模型调用 / 1+2 工具调用(§10.4)
-        assert done["budget_used"]["model_calls"] == 5
-        assert done["budget_used"]["tool_calls"] == 3
+        # 预算沿第一次尝试的计数累计:2+4 模型调用 / 1+3 工具调用(§10.4)
+        assert done["budget_used"]["model_calls"] == 6
+        assert done["budget_used"]["tool_calls"] == 4
 
     async def test_attempts_exhausted_fails_with_real_error(self, repo, tmp_path: Path):
         """退出条件 5:尝试耗尽后 failed,错误文本保留。"""
@@ -158,7 +166,8 @@ class TestCrashRecovery:
 
 class TestApprovalFlow:
     async def test_interrupt_wait_resume_approve(self, repo, tmp_path: Path):
-        """工具审批中断 → waiting_input → resume(approve) → 从检查点继续完成。"""
+        """工具审批中断 → waiting_input → resume(approve) → 每个门控调用逐一批准
+        → 从检查点继续完成。"""
         await _make_run(repo, tmp_path, "run-h1",
                         interrupt_on={"finance_get_metrics": True})
         a1 = await repo.claim_next(owner="w1")
@@ -168,20 +177,30 @@ class TestApprovalFlow:
             model_factory=lambda run: ReactiveScriptedModel(responses=[_full_script()[1]]),
         )
         assert final1 == "waiting_input"
-        mid = await repo.get_run("run-h1")
-        assert mid["status"] == "waiting_input"
+        assert (await repo.get_run("run-h1"))["status"] == "waiting_input"
 
+        # 第一次批准 → 第二个门控调用(收入查询)再次等待审批
         updated = await repo.set_resume_action("run-h1", "approve")
         assert updated is not None and updated["status"] == "queued"
-
         a2 = await repo.claim_next(owner="w1")
         assert a2 is not None and a2["resume_action"] == "approve"
         final2 = await execute_run(
             a2, repo, runtime_dir=tmp_path / "runtime",
-            # 审批通过后:工具执行,模型继续 → 计算并提交结果
-            model_factory=lambda run: ReactiveScriptedModel(responses=_full_script()[2:]),
+            model_factory=lambda run: ReactiveScriptedModel(responses=[_full_script()[2]]),
         )
-        assert final2 == "succeeded"
+        assert final2 == "waiting_input"
+        assert (await repo.get_run("run-h1"))["status"] == "waiting_input"
+
+        # 第二次批准 → 计算并提交结果 → 校验通过 → succeeded
+        updated = await repo.set_resume_action("run-h1", "approve")
+        assert updated is not None and updated["status"] == "queued"
+        a3 = await repo.claim_next(owner="w1")
+        assert a3 is not None and a3["resume_action"] == "approve"
+        final3 = await execute_run(
+            a3, repo, runtime_dir=tmp_path / "runtime",
+            model_factory=lambda run: ReactiveScriptedModel(responses=_full_script()[3:]),
+        )
+        assert final3 == "succeeded"
         assert (await repo.get_run("run-h1"))["status"] == "succeeded"
 
 
@@ -199,3 +218,90 @@ class TestCancel:
         run = await repo.get_run("run-x1")
         assert run["status"] == "cancelled"
         assert run["cancel_requested_at"] is not None
+
+
+def _bad_submit():
+    """引用了不存在的观测(硬错误)的结果提交。"""
+    return _submit({
+        "objective": OBJECTIVE,
+        "researched_at": "2026-10-24T00:00:00+00:00",
+        "entity_ids": ["demo-company-a"],
+        "summary": "净利润 2.72 亿元。",
+        "key_findings": [{"statement": "净利润 2.72 亿元", "kind": "fact", "refs": ["obs-ghost"]}],
+        "metric_refs": ["obs-ghost"],
+    })
+
+
+def _pending_submit():
+    """引用有效但含无法映射的派生数字(可修复问题)。"""
+    return _submit({
+        "objective": OBJECTIVE,
+        "researched_at": "2026-10-24T00:00:00+00:00",
+        "entity_ids": ["demo-company-a"],
+        "summary": "2026H1 净利润 2.72 亿元(obs-a-np-cum-2026h1-v2),利润率约 5.55%。",
+        "key_findings": [{"statement": "净利润 2.72 亿元(obs-a-np-cum-2026h1-v2)", "kind": "fact",
+                          "refs": ["obs-a-np-cum-2026h1-v2"]}],
+        "metric_refs": ["obs-a-np-cum-2026h1-v2"],
+    })
+
+
+class TestRepairLoop:
+    async def _script_prefix(self):
+        return _full_script()[:4]  # read_skill + 两个 metrics + growth
+
+    async def test_repair_then_succeed(self, repo, tmp_path: Path):
+        """硬错误 → 修复反馈 → 模型重新提交正确结果 → succeeded。"""
+        await _make_run(repo, tmp_path, "run-r1")
+        a1 = await repo.claim_next(owner="w1")
+        script = [*await self._script_prefix(), _bad_submit(),
+                  research_result_msg(OBJECTIVE, "demo-company-a")]
+        final = await execute_run(
+            a1, repo, runtime_dir=tmp_path / "runtime",
+            model_factory=lambda r: ReactiveScriptedModel(responses=script),
+        )
+        assert final == "succeeded"
+        run = await repo.get_run("run-r1")
+        assert run["status"] == "succeeded"
+        events = await repo.events_since("run-r1", 0)
+        kinds = [e["type"] for e in events]
+        assert "run.validating" in kinds and "run.repair_feedback" in kinds
+        validating = [e for e in events if e["type"] == "run.validating"]
+        assert validating[0]["payload"]["hard"]  # 第一轮确有硬错误
+        assert not validating[-1]["payload"]["hard"] and not validating[-1]["payload"]["repairable"]
+        # 修复计入预算:6 次模型调用(5 正常 + 1 修复轮)
+        assert run["budget_used"]["model_calls"] == 6
+
+    async def test_hard_error_exhausted_fails_definitively(self, repo, tmp_path: Path):
+        """两轮修复后引用错误仍在 → failed(确定性失败,不 requeue)。"""
+        await _make_run(repo, tmp_path, "run-r2")
+        a1 = await repo.claim_next(owner="w1")
+        script = [*await self._script_prefix(), _bad_submit()]
+        final = await execute_run(
+            a1, repo, runtime_dir=tmp_path / "runtime",
+            model_factory=lambda r: ReactiveScriptedModel(responses=script, hold_last=True),
+        )
+        assert final == "failed"
+        run = await repo.get_run("run-r2")
+        assert run["status"] == "failed"
+        assert "结果校验未通过" in run["error"]
+        # 确定性失败:没有任何 requeued 事件
+        kinds = [e["type"] for e in await repo.events_since("run-r2", 0)]
+        assert "run.requeued" not in kinds
+
+    async def test_repairable_exhausted_yields_completed_partial(self, repo, tmp_path: Path):
+        """仅剩数字映射问题 → completed_partial + pending_review 标记 + 产物。"""
+        await _make_run(repo, tmp_path, "run-r3")
+        a1 = await repo.claim_next(owner="w1")
+        script = [*await self._script_prefix(), _pending_submit()]
+        final = await execute_run(
+            a1, repo, runtime_dir=tmp_path / "runtime",
+            model_factory=lambda r: ReactiveScriptedModel(responses=script, hold_last=True),
+        )
+        assert final == "completed_partial"
+        run = await repo.get_run("run-r3")
+        assert run["status"] == "completed_partial"
+        assert "pending_review" in run["result"]["quality_flags"]
+        assert [a["kind"] for a in await repo.artifacts_of("run-r3")] == ["research-result.v1"]
+        # 无硬错误:引用全部有效
+        validating = [e for e in await repo.events_since("run-r3", 0) if e["type"] == "run.validating"]
+        assert validating[-1]["payload"]["hard"] == []
