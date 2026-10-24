@@ -41,6 +41,18 @@ export const api = {
       headers: idemKey ? { "Idempotency-Key": idemKey } : {},
     }),
   getRun: (id: string) => req<RunBrief>(`/v1/runs/${id}`),
+  listRuns: (limit = 20) =>
+    req<{
+      runs: {
+        run_id: string;
+        status: string;
+        objective: string;
+        entity_ids: string[];
+        attempt: number;
+        created_at: string | null;
+        summary: string | null;
+      }[];
+    }>(`/v1/runs?limit=${limit}`),
   cancelRun: (id: string) => req<unknown>(`/v1/runs/${id}/cancel`, { method: "POST" }),
   resumeRun: (id: string, approve: boolean) =>
     req<{ status: string }>(`/v1/runs/${id}/resume`, {

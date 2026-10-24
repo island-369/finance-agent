@@ -70,6 +70,11 @@ def _valid_ids(tool_outputs: list[dict], as_of: datetime) -> set[str]:
             ev = hit.get("evidence") or {}
             if ev.get("available_at", "9999") <= iso:
                 valid.add(ev.get("evidence_id"))
+            # 文档版本 ID 同为合法证据引用(M4 报告 §3 归一化改进):
+            # 引用 docv-* 与引用其下 chk-* 等价,均指向本次工具输出中出现过的版本
+            doc = hit.get("document") or {}
+            if doc.get("available_at", "9999") <= iso:
+                valid.add(doc.get("version_id"))
         # compare_peers 行内 observation_id
         for row in (payload.get("rows") or []):
             if row.get("observation_id"):

@@ -59,6 +59,7 @@ class RunCreateRequest(BaseModel):
     objective: str = Field(min_length=1)
     entity_ids: list[str] = Field(min_length=1)
     as_of: str = DEFAULT_AS_OF
+    skill_preferences: list[str] = Field(default_factory=list, description="显式 Skill(name 或 name@version),即任务边界")
     budget: dict = Field(default_factory=dict)
     interrupt_on_tool: str | None = Field(default=None, description="在指定工具前等待审批(演示用)")
 
@@ -115,6 +116,7 @@ def create_app(*, repo: RunRepository | None = None, runtime_dir: Path | None = 
                 entity_ids=req.entity_ids,
                 as_of=req.as_of,
                 tool_registry=build_default_registry(),
+                task_preferences=req.skill_preferences or None,
                 runtime_dir=app.state.runtime_dir,
             )
         except Exception as e:
@@ -173,6 +175,25 @@ def create_app(*, repo: RunRepository | None = None, runtime_dir: Path | None = 
             "summary": result.get("summary"),
             "artifact_kinds": [a["kind"] for a in await get_repo().artifacts_of(run["id"])],
             "created_at": run["created_at"].isoformat() if run["created_at"] else None,
+        }
+
+    @app.get("/v1/runs")
+    async def list_runs(limit: int = 20, status: str | None = None) -> dict:
+        """最近任务(工作台首页);只返回业务字段摘要。"""
+        rows = await get_repo().list_runs(limit=max(1, min(limit, 100)), status=status)
+        return {
+            "runs": [
+                {
+                    "run_id": r["id"],
+                    "status": r["status"],
+                    "objective": r["objective"],
+                    "entity_ids": r["entity_ids"],
+                    "attempt": r["attempt"],
+                    "created_at": r["created_at"].isoformat() if r["created_at"] else None,
+                    "summary": (r.get("result") or {}).get("summary"),
+                }
+                for r in rows
+            ]
         }
 
     @app.get("/v1/runs/{run_id}/artifacts")

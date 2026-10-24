@@ -81,6 +81,10 @@ async def run_worker(*, once: bool = False, model_factory=None) -> int:
                                       error=f"worker 意外错误: {type(e).__name__}: {e}")
         finally:
             renew_task.cancel()
+            try:
+                await renew_task
+            except asyncio.CancelledError:
+                pass
         executed += 1
         print(f"[worker:{owner}] done {run['id']} → {final}", flush=True)
         if once:

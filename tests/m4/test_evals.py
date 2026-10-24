@@ -53,6 +53,28 @@ class TestScorers:
         s = score_case(case, cr)
         assert not s.citation_valid and s.invalid_refs == ["obs-ghost"]
 
+    async def test_document_version_ref_is_valid(self):
+        """引用 docv-*(文档版本)与引用其下证据 ID 等价(M4 报告 §3 改进)。"""
+        outputs = [{
+            "tool": "documents.search", "ok": True,
+            "result": {"hits": [{
+                "evidence": {"evidence_id": "chk-a-p1-1", "available_at": "2026-05-30T00:00:00Z"},
+                "document": {"version_id": "docv-a-q1-correct-v1", "available_at": "2026-05-30T00:00:00Z"},
+            }]},
+            "error": None,
+        }]
+        case = _case()
+        ok_cr = _result(refs=["docv-a-q1-correct-v1"], outputs=outputs)
+        assert score_case(case, ok_cr).citation_valid
+        # 晚于 as_of 的版本引用仍无效
+        late_outputs = [{
+            "tool": "documents.search", "ok": True,
+            "result": {"hits": [{"document": {"version_id": "docv-future", "available_at": "2026-12-01T00:00:00Z"}}]},
+            "error": None,
+        }]
+        bad_cr = _result(refs=["docv-future"], outputs=late_outputs)
+        assert not score_case(case, bad_cr).citation_valid
+
     async def test_time_violation_counted(self):
         outputs = [{
             "tool": "finance.get_metrics", "ok": True,

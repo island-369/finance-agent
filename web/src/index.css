@@ -1,0 +1,65 @@
+/* 工作台显式浅色主题:不依赖浏览器默认(深色系统下曾渲染为黑底) */
+:root {
+  color-scheme: light;
+  --bg: #fafafa;
+  --fg: #1f1f1f;
+  --muted: #555;
+  --border: #ddd;
+  --accent: #1a73e8;
+  --ok: #188038;
+  --warn: #a05a00;
+  --err: #d93025;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 12px;
+  cursor: pointer;
+  color: var(--fg);
+}
+button:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+input,
+textarea,
+select {
+  background: #fff;
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+
+table {
+  border-collapse: collapse;
+}
+th,
+td {
+  padding: 6px 10px;
+  text-align: left;
+}

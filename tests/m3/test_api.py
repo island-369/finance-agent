@@ -40,6 +40,29 @@ class TestCreateRun:
         assert (await app_client.get("/v1/runs/nope")).status_code == 404
 
 
+class TestListAndPreferences:
+    async def test_list_runs_returns_briefs(self, app_client):
+        await app_client.post("/v1/runs", json=await _create_body())
+        resp = await app_client.get("/v1/runs?limit=10")
+        assert resp.status_code == 200
+        runs = resp.json()["runs"]
+        assert len(runs) >= 1
+        r0 = runs[0]
+        assert {"run_id", "status", "objective", "entity_ids", "created_at"} <= set(r0)
+        assert r0["status"] == "queued"
+
+    async def test_skill_preferences_narrow_candidates(self, app_client):
+        """§13.2 skill_preferences 即任务边界:候选收敛为指定 Skill。"""
+        body = {**(await _create_body()), "skill_preferences": ["peer-comparison"]}
+        created = (await app_client.post("/v1/runs", json=body)).json()
+        assert created["skill_candidates"] == ["peer-comparison@1.0.0"]
+
+    async def test_skill_preferences_invalid_fails_loudly(self, app_client):
+        body = {**(await _create_body()), "skill_preferences": ["no-such"]}
+        resp = await app_client.post("/v1/runs", json=body)
+        assert resp.status_code == 422  # 显式指定不存在 → 创建即失败,不静默替换
+
+
 class TestCancelResume:
     async def test_cancel_idempotent(self, app_client):
         created = (await app_client.post("/v1/runs", json=await _create_body())).json()

@@ -2,12 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api, streamEvents, type Ev, type RunBrief } from "../api";
 
-const STATUS_STYLE: Record<string, string> = {
-  queued: "#888", running: "#1a73e8", validating: "#1a73e8",
-  waiting_input: "#e8710a", succeeded: "#188038", failed: "#d93025",
-  cancelled: "#888",
-};
-
 function evText(e: Ev): string {
   const p = e.payload as Record<string, unknown>;
   const bits = [String(p.name ?? "")];
@@ -16,6 +10,22 @@ function evText(e: Ev): string {
   if (usage) bits.push(`in ${usage.input_tokens ?? "?"} / out ${usage.output_tokens ?? "?"}`);
   return bits.filter(Boolean).join(" · ");
 }
+
+interface RunListItem {
+  run_id: string;
+  status: string;
+  objective: string;
+  entity_ids: string[];
+  attempt: number;
+  created_at: string | null;
+  summary: string | null;
+}
+
+const STATUS_STYLE: Record<string, string> = {
+  queued: "#888", running: "#1a73e8", validating: "#1a73e8",
+  waiting_input: "#e8710a", succeeded: "#188038", failed: "#d93025",
+  cancelled: "#888",
+};
 
 export default function RunPage() {
   const { runId: routeRunId } = useParams();
@@ -26,10 +36,20 @@ export default function RunPage() {
   const [run, setRun] = useState<RunBrief | null>(null);
   const [events, setEvents] = useState<Ev[]>([]);
   const [artifacts, setArtifacts] = useState<Record<string, unknown>[]>([]);
+  const [recent, setRecent] = useState<RunListItem[]>([]);
   const [error, setError] = useState("");
   const closeRef = useRef<null | (() => void)>(null);
 
   const stopStream = () => closeRef.current?.();
+
+  const loadRecent = useCallback(async () => {
+    try {
+      const d = await api.listRuns(15);
+      setRecent(d.runs);
+    } catch {
+      /* 列表失败不影响主流程 */
+    }
+  }, []);
 
   const loadRun = useCallback(async (id: string) => {
     try {
@@ -52,6 +72,7 @@ export default function RunPage() {
   }, [loadRun]);
 
   useEffect(() => {
+    loadRecent();
     if (routeRunId) {
       setEvents([]);
       setArtifacts([]);
@@ -59,7 +80,7 @@ export default function RunPage() {
       startSSE(routeRunId);
     }
     return stopStream;
-  }, [routeRunId, loadRun, startSSE]);
+  }, [routeRunId, loadRun, startSSE, loadRecent]);
 
   const create = async () => {
     setError("");
@@ -75,6 +96,7 @@ export default function RunPage() {
         crypto.randomUUID(),
       );
       nav(`/runs/${res.run_id}`);
+      loadRecent();
     } catch (e) {
       setError(String(e));
     }
@@ -104,6 +126,35 @@ export default function RunPage() {
         </div>
         {error && <p style={{ color: "#d93025" }}>{error}</p>}
       </section>
+
+      {recent.length > 0 && !routeRunId && (
+        <section style={{ marginBottom: 24 }}>
+          <h3>最近任务</h3>
+          <table style={{ width: "100%", fontSize: 14 }}>
+            <thead>
+              <tr style={{ borderBottom: "2px solid #ddd", textAlign: "left" }}>
+                <th>任务</th><th>状态</th><th>公司</th><th>摘要</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recent.map((r) => (
+                <tr key={r.run_id} style={{ borderBottom: "1px solid #eee", cursor: "pointer" }}
+                    onClick={() => nav(`/runs/${r.run_id}`)}>
+                  <td>
+                    {r.run_id}
+                    <div style={{ fontSize: 12, color: "#555" }}>{r.objective.slice(0, 50)}</div>
+                  </td>
+                  <td style={{ color: STATUS_STYLE[r.status] ?? "#333" }}>{r.status}</td>
+                  <td style={{ fontSize: 12 }}>{r.entity_ids.join(", ")}</td>
+                  <td style={{ fontSize: 12, color: "#555" }}>
+                    {(r.summary ?? "").slice(0, 60) || "-"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
 
       {run && (
         <section style={{ marginBottom: 24 }}>

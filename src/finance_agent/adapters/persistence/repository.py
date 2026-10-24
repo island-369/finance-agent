@@ -135,6 +135,15 @@ class RunRepository:
             run = await session.get(Run, run_id)
             return bool(run and run.cancel_requested_at is not None)
 
+    async def list_runs(self, *, limit: int = 20, status: str | None = None) -> list[dict]:
+        """最近任务列表(工作台用);created_at 倒序。"""
+        async with self._sessions() as session:
+            stmt = select(Run).order_by(Run.created_at.desc(), Run.id.desc()).limit(limit)
+            if status is not None:
+                stmt = stmt.where(Run.status == status)
+            rows = (await session.execute(stmt)).scalars()
+            return [_run_dict(r) for r in rows]
+
     async def events_since(self, run_id: str, after_seq: int = 0, limit: int = 200) -> list[dict]:
         async with self._sessions() as session:
             rows = (
