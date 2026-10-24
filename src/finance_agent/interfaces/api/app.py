@@ -249,12 +249,14 @@ def create_app(*, repo: RunRepository | None = None, runtime_dir: Path | None = 
                         "payload": e["payload"],
                         "occurred_at": e["occurred_at"].isoformat() if e["occurred_at"] else None,
                     }
-                    yield f"id: {e['seq']}\nevent: {e['type']}\ndata: {json.dumps(data, ensure_ascii=False, default=str)}\n\n".encode()
+                    # 不带 event: 命名行——EventSource.onmessage 只派发默认消息,
+                    # 类型已在 data JSON 的事件信封里(§13.3)
+                    yield f"id: {e['seq']}\ndata: {json.dumps(data, ensure_ascii=False, default=str)}\n\n".encode()
                 run = await repo.get_run(run_id)
                 if run is None:
                     return
                 if run["status"] in TERMINAL_STATUSES and not events:
-                    yield b"event: stream.end\ndata: {}\n\n"
+                    yield b'data: {"type": "stream.end"}\n\n'
                     return
                 now = asyncio.get_event_loop().time()
                 if now - heartbeat_at >= SSE_HEARTBEAT:
