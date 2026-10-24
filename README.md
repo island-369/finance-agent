@@ -10,6 +10,7 @@
 - [M3 任务服务与恢复说明](docs/M3-任务服务与恢复说明.md)
 - [M4 数据源接入记录](docs/M4-数据源接入记录.md)
 - [M4 评测报告](docs/M4-评测报告.md)
+- [M5 工作台与演示脚本](docs/M5-工作台与演示脚本.md)
 
 ## 实施进度(按设计文档 §17 的 M0–M6)
 
@@ -22,7 +23,7 @@
 | M2 Skill 注册与首条真实研究任务 | **完成,已验证** | 三个研究包 1.0.0 + 注册表/依赖检查/版本覆盖/只读视图 + M1 工具接入引擎适配器;真实模型自主组合 2 个 Skill 完成研究并产出完整执行记录(引用 calc/obs/chk 三类 ID);不匹配不强选、缺工具有明确原因、新增 Skill 不改执行循环均有测试(68 项通过) |
 | M3 任务服务、持久化与恢复 | **完成,已验证(SQLite 全链路)** | FastAPI + 独立 Worker + 任务表(租约/fencing token/幂等键)+ SSE 补读 + 崩溃恢复 + 预算持久化 + 取消/审批恢复;92 项测试,真实进程端到端跑通;Compose(PostgreSQL)待可用 Docker 实测 |
 | M4 数据源替换与评测基线 | **完成,已验证** | 评测框架(A 无 Skill/B 全装入/C 按需加载/D 固定流程)+ 9 题开发集 + 代码评分(引用/数值/时间边界/反编造);第一轮真实评测完成(逐题明细落盘);akshare 真实数据源接入并实测(白酒三家公司,契约不变,fixture 可切换);结论:暂不宣称 Skill 收益,归因与复验路径已登记 |
-| M5 研究工作台 | 未开始 | |
+| M5 研究工作台 | **完成,已验证** | React 工作台(任务输入/SSE 时间线/结果与证据/Skill 版本/评测结果)+ 版本发布/回滚 API 与 UI;四条退出条件浏览器实测:版本回滚真实生效、新增 Skill 自动发现、数据源切换、审批恢复;103 项测试通过 |
 
 ## 快速开始
 
@@ -46,6 +47,10 @@ uv run uvicorn finance_agent.interfaces.api.app:app --port 8010 &
 uv run fa-worker &
 curl -X POST localhost:8010/v1/runs -H 'Content-Type: application/json' \
      -d '{"objective":"分析 demo-company-a 2026 年上半年净利润变化","entity_ids":["demo-company-a"]}'
+
+# M5 研究工作台(浏览器):
+cd web && npm install && npm run build && npx vite preview --port 5180
+# 打开 http://localhost:5180/
 ```
 
 正式模块:contracts / finance / tools / retrieval / ports / skills /

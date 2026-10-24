@@ -110,11 +110,12 @@ class TestSkillTriggeredFlow:
         assert record["no_skill_selected"] is False
         assert "finance.calculate_growth@1" in record["bound_tools"]
         assert record["result"]["calculation_refs"]
-        assert record["skills"]["candidates"] == [
+        candidates = record["skills"]["candidates"]
+        assert {
             "announcement-impact@1.0.0",
             "earnings-analysis@1.0.0",
             "peer-comparison@1.0.0",
-        ]
+        } <= set(candidates)  # M5 新增包可能出现在其后
 
     async def test_no_skill_selected_not_forced(self, tmp_path: Path):
         """退出条件 2:不读 Skill 直接研究 → 记录 no_skill_selected,不强行匹配。"""

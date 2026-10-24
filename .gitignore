@@ -17,5 +17,9 @@ data/runtime/
 .pytest_cache/
 .ruff_cache/
 
+# 前端
+web/node_modules/
+web/dist/
+
 # 系统
 .DS_Store

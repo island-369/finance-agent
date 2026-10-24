@@ -1,0 +1,23 @@
+[
+  {
+    "name": "earnings-analysis",
+    "version": "1.0.0",
+    "action": "publish",
+    "at": "2026-10-24T00:40:42.507291+00:00",
+    "note": "发布 1.0.0"
+  },
+  {
+    "name": "earnings-analysis",
+    "version": "0.1.0",
+    "action": "rollback",
+    "at": "2026-10-24T00:40:42.515718+00:00",
+    "note": "回滚演示"
+  },
+  {
+    "name": "earnings-analysis",
+    "version": "1.0.0",
+    "action": "publish",
+    "at": "2026-10-24T00:41:40.693746+00:00",
+    "note": "演示后恢复 1.0.0"
+  }
+]

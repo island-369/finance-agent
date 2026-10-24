@@ -56,6 +56,8 @@ class TestRegistry:
         assert "earnings-analysis@0.1.0" in by_ref  # M0 遗留版本仍在
         assert "announcement-impact@1.0.0" in by_ref
         assert "peer-comparison@1.0.0" in by_ref
+        # M5 演示新增的包(M5 退出条件:新增 Skill 无需改代码)
+        assert "valuation-snapshot@0.1.0" in by_ref
 
     def test_metadata_parsed_with_hash(self, records):
         ea = next(r for r in records if r.ref == "earnings-analysis@1.0.0")
@@ -172,7 +174,8 @@ class TestView:
         candidates = eligible_candidates(resolved)
         manifest = build_skill_view(candidates, tmp_path / "view")
         names = {m["name"] for m in manifest}
-        assert names == {"earnings-analysis", "announcement-impact", "peer-comparison"}
+        assert {"earnings-analysis", "announcement-impact", "peer-comparison"} <= names
+        assert "valuation-snapshot" in names  # M5 新增包自动进入候选
         assert "needs-ghost" not in names  # 不可用不进视图
         assert (tmp_path / "view" / "skills" / "earnings-analysis" / "SKILL.md").is_file()
         assert (tmp_path / "view" / "skills" / "earnings-analysis" / "references" / "metric-definitions.md").is_file()

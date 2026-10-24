@@ -80,6 +80,20 @@ def create_app(*, repo: RunRepository | None = None, runtime_dir: Path | None = 
 
     app = FastAPI(title="金融研究 Agent", version="0.1.0", lifespan=lifespan)
 
+    from fastapi.middleware.cors import CORSMiddleware
+
+    # 本机/受控个人环境(设计 §13.1);开放多用户前收紧来源
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://localhost:5173", "http://localhost:5180", "http://127.0.0.1:5173", "http://127.0.0.1:5180"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    from finance_agent.interfaces.api.admin import router as admin_router
+
+    app.include_router(admin_router)
+
     def get_repo() -> RunRepository:
         return app.state.repo  # type: ignore[no-any-return]
 
