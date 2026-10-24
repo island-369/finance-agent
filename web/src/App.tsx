@@ -20,6 +20,7 @@ const STATUS_COLOR: Record<string, string> = {
   running: "#1a66d6",
   validating: "#1a66d6",
   waiting_input: "#d48b00",
+  completed_partial: "#d48b00",
   succeeded: "#14804a",
   failed: "#c5221f",
   cancelled: "#9e9e9e",

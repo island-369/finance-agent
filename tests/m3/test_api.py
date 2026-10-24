@@ -57,6 +57,12 @@ class TestListAndPreferences:
         created = (await app_client.post("/v1/runs", json=body)).json()
         assert created["skill_candidates"] == ["peer-comparison@1.0.0"]
 
+    async def test_repair_rounds_passthrough(self, app_client):
+        body = {**(await _create_body()), "budget": {"result_repair_rounds": 1}}
+        created = (await app_client.post("/v1/runs", json=body)).json()
+        detail = (await app_client.get(f"/v1/runs/{created['run_id']}")).json()
+        assert detail["budget"]["limits"]["result_repair_rounds"] == 1
+
     async def test_skill_preferences_invalid_fails_loudly(self, app_client):
         body = {**(await _create_body()), "skill_preferences": ["no-such"]}
         resp = await app_client.post("/v1/runs", json=body)

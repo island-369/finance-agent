@@ -14,7 +14,7 @@ import {
 } from "@ant-design/icons";
 import { api, streamEvents, type Ev } from "../api";
 
-type StepStatus = "loading" | "success" | "error";
+type StepStatus = "loading" | "success" | "error" | "abort";
 
 interface Step {
   key: string;
@@ -52,7 +52,7 @@ function brief(text: unknown, limit = 160): string {
   return (s ?? "").length > limit ? s.slice(0, limit) + "…" : s;
 }
 
-function buildSteps(events: Ev[]): Step[] {
+function buildSteps(events: Ev[], runStatus: string): Step[] {
   const steps: Step[] = [];
   const openTool: Record<string, Step | undefined> = {};
   for (const e of events) {
@@ -112,11 +112,20 @@ function buildSteps(events: Ev[]): Step[] {
       const hard = (p.hard as string[] | undefined) ?? [];
       const repairable = (p.repairable as string[] | undefined) ?? [];
       const n = hard.length + repairable.length;
+      const isLast = !events.some((x) => x.seq > e.seq && x.type === "run.validating");
+      let status: StepStatus = "success";
+      if (n > 0) {
+        // 有问题:中间轮 = 已反馈修复;最后一轮按任务终态判定
+        if (!isLast) status = "abort";
+        else if (runStatus === "failed") status = "error";
+        else if (runStatus === "completed_partial") status = "abort";
+        else status = "loading";
+      }
       steps.push({
         key: `v-${e.seq}`,
         title: n === 0 ? "结果校验通过(引用/数值/时间边界)" : `结果校验:发现 ${n} 个问题`,
         description: n === 0 ? undefined : [...hard, ...repairable].slice(0, 3).join(";"),
-        status: n === 0 ? "success" : "loading",
+        status,
       });
     } else if (e.type === "run.repair_feedback") {
       steps.push({
@@ -238,7 +247,7 @@ export default function RunPage() {
   }, [events, result, run?.status]);
 
   const active = run ? ["queued", "running", "validating"].includes(run.status) : false;
-  const steps = useMemo(() => buildSteps(events), [events]);
+  const steps = useMemo(() => buildSteps(events, run?.status ?? ""), [events, run?.status]);
   const hasUserMsg = Boolean(routeRunId || run);
   const isWaiting = run?.status === "waiting_input";
 
@@ -320,6 +329,8 @@ export default function RunPage() {
                 <LoadingOutlined spin />
               ) : s.status === "error" ? (
                 <CloseCircleOutlined style={{ color: "#c5221f" }} />
+              ) : s.status === "abort" ? (
+                <InfoCircleOutlined style={{ color: "#d48b00" }} />
               ) : (
                 <CheckCircleOutlined style={{ color: "#14804a" }} />
               ),

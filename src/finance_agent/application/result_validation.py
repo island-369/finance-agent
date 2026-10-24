@@ -179,15 +179,18 @@ def _in_evidence_text(n: Decimal, trace: RunTrace) -> bool:
     if not trace.evidence_texts:
         return False
     for mult in _SCALE_FACTORS:
-        forms = {f"{(abs(n) * mult):,.0f}", str(abs(n) * mult)}
+        scaled = abs(n) * mult
+        if scaled == scaled.to_integral_value():
+            # 整数形态:精确值 + 千分位写法(无舍入)
+            forms = (str(scaled), f"{scaled:,.0f}")
+        else:
+            forms = (str(scaled),)  # 非整数禁止舍入匹配,避免"2.72→3"类误报
         if any(form in text for text in trace.evidence_texts for form in forms):
             return True
     return False
 
 
-def _number_mapped(
-    n: Decimal, refs: list[str], trace: RunTrace, context_values: list[Decimal]
-) -> bool:
+def _number_mapped(n: Decimal, trace: RunTrace, context_values: list[Decimal]) -> bool:
     if 1900 <= n <= 2100 and n == int(n):
         return True  # 年份豁免
     if _in_evidence_text(n, trace):
@@ -271,10 +274,10 @@ def validate_result(result: dict, trace: RunTrace) -> ValidationResult:
     texts = [result.get("summary") or ""] + [str(f.get("statement")) for f in findings]
     for text in texts:
         for n in _extract_numbers(text):
-            if _number_mapped(n, [], trace, global_vals):
+            if _number_mapped(n, trace, global_vals):
                 continue
             in_finding = any(
-                _number_mapped(n, [], trace, vals) for vals in findings_vals.values()
+                _number_mapped(n, trace, vals) for vals in findings_vals.values()
             )
             if not in_finding:
                 report.repairable.append(
